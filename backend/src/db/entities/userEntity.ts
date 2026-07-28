@@ -1,4 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Like } from './likeEntity';
 import { Comment } from './commentEntity';
 import { BookListItem } from './bookListItemEntity';
@@ -11,8 +17,8 @@ export class User {
   login!: string;
   @Column()
   hashedPassword!: string;
-  @Column()
-  createdAt!: string;
+  @CreateDateColumn()
+  createdAt!: Date;
   @OneToMany(() => Like, (like) => like.user)
   likes!: Like[];
   @OneToMany(() => Comment, (comment) => comment.user)

@@ -1,9 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './userEntity';
 import { Book } from './bookEntity';
@@ -14,9 +16,9 @@ export class Comment {
   id!: number;
   @Column()
   text!: string;
-  @Column()
+  @CreateDateColumn()
   createdAt!: string;
-  @Column()
+  @UpdateDateColumn()
   updatedAt!: string;
   @ManyToOne(() => Book, (book) => book.comments)
   @JoinColumn()
