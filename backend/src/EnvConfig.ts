@@ -1,17 +1,12 @@
-function processEnv(name: string) {
-  const data = process.env[name];
-  if (data === undefined) throw Error(`${name} is missing from the env file`);
-  return data;
-}
-function processNumEnv(name: string) {
-  const data = processEnv(name);
-  return parseInt(data);
-}
+import { ConfigService } from '@nestjs/config';
 
-export const EnvConfig = {
-  dbUsername: processEnv('DB_USERNAME'),
-  dbHost: processEnv('DB_HOST'),
-  dbPort: processNumEnv('DB_PORT'),
-  dbPassword: processEnv('DB_PASSWORD'),
-  dbName: processEnv('DB_NAME'),
-};
+export function getEnvConfig(configService: ConfigService) {
+  return {
+    dbUsername: configService.get<string>('DB_USERNAME')!,
+    dbHost: configService.get<string>('DB_HOST')!,
+    dbPort: configService.get<number>('DB_PORT')!,
+    dbPassword: configService.get<string>('DB_PASSWORD')!,
+    dbName: configService.get<string>('DB_NAME')!,
+    jwtSecret: configService.get<string>('JWT_SECRET')!,
+  };
+}
