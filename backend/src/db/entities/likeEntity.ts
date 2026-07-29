@@ -1,4 +1,5 @@
 import {
+  Column,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -6,17 +7,15 @@ import {
   Unique,
 } from 'typeorm';
 import { User } from './userEntity';
-import { Book } from './bookEntity';
 
 @Entity()
-@Unique(['user', 'book'])
+@Unique(['user', 'bookOlid'])
 export class Like {
   @PrimaryGeneratedColumn()
   id!: number;
   @ManyToOne(() => User, (user) => user.likes)
   @JoinColumn()
   user!: User;
-  @ManyToOne(() => Book, (book) => book.likes)
-  @JoinColumn()
-  book!: Book;
+  @Column()
+  bookOlid!: string;
 }

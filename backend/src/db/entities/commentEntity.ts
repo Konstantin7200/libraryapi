@@ -8,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './userEntity';
-import { Book } from './bookEntity';
 
 @Entity()
 export class Comment {
@@ -20,9 +19,8 @@ export class Comment {
   createdAt!: string;
   @UpdateDateColumn()
   updatedAt!: string;
-  @ManyToOne(() => Book, (book) => book.comments)
-  @JoinColumn()
-  book!: Book;
+  @Column()
+  bookOlid!: string;
   @ManyToOne(() => User, (user) => user.comments)
   @JoinColumn()
   user!: User;

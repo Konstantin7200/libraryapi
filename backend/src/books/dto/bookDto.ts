@@ -1,4 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+type bookDto = {
+  olid: string;
+  title: string;
+  authors: string[];
+  coversUrl: string | null;
+};
+export type { bookDto };
+
+/*import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Like } from './likeEntity';
 import { Comment } from './commentEntity';
 import { BookListItem } from './bookListItemEntity';
@@ -22,3 +30,4 @@ export class Book {
   @OneToMany(() => BookListItem, (bookListItem) => bookListItem.book)
   bookList!: BookListItem[];
 }
+*/

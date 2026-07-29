@@ -1,21 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { getBooks } from '../api/bookApi';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
   @Get('/')
-  async findAll(
+  async findMany(
     @Query('title') title: string,
     @Query('author') author: string,
   ) {
-    const data = await getBooks(title, author);
-    console.log(data);
-    return data;
+    const response = await this.booksService.findMany(title, author);
+    return response;
   }
-  @Get('/:id')
-  findOne() {
-    return 'id route';
+  @Get('/:olid')
+  async findOne(@Param('olid') olid: string) {
+    const response = await this.booksService.findOne(olid);
+    return response;
   }
 }

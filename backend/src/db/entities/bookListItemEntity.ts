@@ -6,19 +6,17 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Book } from './bookEntity';
 import { User } from './userEntity';
 
 @Entity()
-@Unique(['user', 'book'])
+@Unique(['user', 'bookOlid'])
 export class BookListItem {
   @PrimaryGeneratedColumn()
   id!: number;
   @Column()
   status!: 'Want to read' | 'Currently reading' | 'Already read';
-  @ManyToOne(() => Book, (book) => book.bookList)
-  @JoinColumn()
-  book!: Book;
+  @Column()
+  bookOlid!: string;
   @ManyToOne(() => User, (user) => user.bookList)
   @JoinColumn()
   user!: User;

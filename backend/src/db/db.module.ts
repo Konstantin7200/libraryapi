@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserRepository } from './userRepository';
 import { User } from './entities/userEntity';
-import { Book } from './entities/bookEntity';
 import { Comment } from './entities/commentEntity';
 import { Like } from './entities/likeEntity';
 import { BookListItem } from './entities/bookListItemEntity';
@@ -23,7 +22,7 @@ import { getEnvConfig } from '../envConfig';
           username: config.dbUsername,
           password: config.dbPassword,
           database: config.dbName,
-          entities: [Book, Like, Comment, User, BookListItem],
+          entities: [Like, Comment, User, BookListItem],
         };
       },
     }),
