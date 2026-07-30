@@ -12,13 +12,15 @@ export class AuthGuard implements CanActivate {
     private readonly configService: ConfigService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const cookies = context.switchToHttp().getRequest<Request>().cookies;
+    const req = context.switchToHttp().getRequest<Request>();
+    const cookies = req.cookies;
     const accessToken: unknown = cookies[AccessTokenCookie];
 
     if (typeof accessToken !== 'string') throw new Error('Access denied');
 
     const accessPayload = await this.verifyToken(accessToken);
     if (accessPayload === null) return false;
+    Object.defineProperty(req, 'userId', accessPayload.id);
     return true;
   }
   private async verifyToken(token: string) {

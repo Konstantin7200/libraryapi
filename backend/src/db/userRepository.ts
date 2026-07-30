@@ -13,6 +13,10 @@ export class UserRepository {
     const result = await this.repo.findOneBy({ login: login });
     return result;
   }
+  async findOneById(id: number) {
+    const result = await this.repo.findOneBy({ id: id });
+    return result;
+  }
   createOne(login: string, hashedPassword: string) {
     const user: DeepPartial<User> = {
       login: login,
