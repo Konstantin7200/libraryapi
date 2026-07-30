@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../db/userRepository';
 import { hashFunction } from '../utils/hashFunction';
+import { AccessTokenMaxAge, RefreshTokenMaxAge } from '../constants';
 
 @Injectable()
 export class AuthService {
@@ -17,27 +18,61 @@ export class AuthService {
     if (user === null) throw Error('Incorrect login or password');
     if (user.hashedPassword != hashFunction(authDto.password))
       throw Error('Incorrect login or password');
-    const payload = {
-      id: user.id,
-    };
-    const result = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-    });
+    const result = await this.createTokens(user.id);
     return result;
   }
   async signUp(authDto: AuthDto) {
     const user = await this.userRepository.findOne(authDto.login);
     if (user !== null) throw Error('User with this login already exists');
-    const createdUser = this.userRepository.createOne(
+    const createdUser = await this.userRepository.createOne(
       authDto.login,
       hashFunction(authDto.password),
     );
-    const payload = {
-      id: createdUser.id,
-    };
-    const result = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-    });
+    const result = await this.createTokens(createdUser.id);
     return result;
   }
+  private async createTokens(id: number) {
+    const accessPayload: JwtPayload = {
+      id: id,
+      exp: Math.floor(Date.now() / 1000) + AccessTokenMaxAge,
+    };
+    const accessToken = await this.jwtService.signAsync(accessPayload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    const refreshPayload: JwtPayload = {
+      id: id,
+      exp: Math.floor(Date.now() / 1000) + RefreshTokenMaxAge,
+    };
+    const refreshToken = await this.jwtService.signAsync(refreshPayload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    return { accessToken: accessToken, refreshToken: refreshToken };
+  }
+  async createAccessToken(refreshToken: string) {
+    const refreshPayload = await this.verifyToken(refreshToken);
+    if (refreshPayload === null) return null;
+    const accessPayload: JwtPayload = {
+      id: refreshPayload.id,
+      exp: Math.floor(Date.now() / 1000) + AccessTokenMaxAge,
+    };
+    const accessToken = await this.jwtService.signAsync(accessPayload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    return accessToken;
+  }
+  private async verifyToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      return payload;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
 }
+export type JwtPayload = {
+  id: number;
+  exp: number;
+};

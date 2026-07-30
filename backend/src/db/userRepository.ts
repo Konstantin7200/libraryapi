@@ -18,7 +18,7 @@ export class UserRepository {
       login: login,
       hashedPassword: hashedPassword,
     };
-    const result = this.repo.create(user);
+    const result = this.repo.save(user);
     return result;
   }
 }
