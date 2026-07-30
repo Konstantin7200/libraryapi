@@ -8,6 +8,7 @@ import { Like } from './entities/likeEntity';
 import { BookListItem } from './entities/bookListItemEntity';
 import { getEnvConfig } from '../envConfig';
 import { CommentRepository } from './commentRepository';
+import { BookListRepository } from './bookListRepository';
 
 @Module({
   imports: [
@@ -27,9 +28,9 @@ import { CommentRepository } from './commentRepository';
         };
       },
     }),
-    TypeOrmModule.forFeature([User, Comment]),
+    TypeOrmModule.forFeature([User, Comment, BookListItem]),
   ],
-  providers: [UserRepository, CommentRepository],
-  exports: [UserRepository, CommentRepository],
+  providers: [UserRepository, CommentRepository, BookListRepository],
+  exports: [UserRepository, CommentRepository, BookListRepository],
 })
 export class DatabaseModule {}
