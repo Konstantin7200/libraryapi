@@ -6,6 +6,7 @@ import { BooksModule } from './books/books.module';
 import { ConfigModule } from '@nestjs/config';
 import { CommentsModule } from './comments/comments.module';
 import { BookListModule } from './bookList/book-list.module';
+import { LikesModule } from './likes/likes.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { BookListModule } from './bookList/book-list.module';
     ConfigModule.forRoot(),
     CommentsModule,
     BookListModule,
+    LikesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

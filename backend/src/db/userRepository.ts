@@ -17,12 +17,12 @@ export class UserRepository {
     const result = await this.repo.findOneBy({ id: id });
     return result;
   }
-  createOne(login: string, hashedPassword: string) {
+  async createOne(login: string, hashedPassword: string) {
     const user: DeepPartial<User> = {
       login: login,
       hashedPassword: hashedPassword,
     };
-    const result = this.repo.save(user);
+    const result = await this.repo.save(user);
     return result;
   }
 }
