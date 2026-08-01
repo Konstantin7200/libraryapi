@@ -1,0 +1,8 @@
+@use '../mixins';
+
+.page {
+  @include mixins.page();
+  gap:3rem;
+  padding-bottom: 2rem;
+  justify-content: space-between;
+}

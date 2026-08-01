@@ -1,0 +1,5 @@
+@use "../../mixins.scss";
+
+.page{
+    @include mixins.page();
+}

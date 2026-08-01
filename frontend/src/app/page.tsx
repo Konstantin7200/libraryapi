@@ -1,66 +1,50 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { Button, Card, CardActions, CardContent } from "@mui/material";
+import styles from "./page.module.scss";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      <h1>Welcome to the best online books library</h1>
+      <h2>Here you can</h2>
+      <Card>
+        <CardContent>
+          <h3>View books</h3>
+          <p>Browse through our extensive collection of books across various genres. Discover new authors, explore different categories, and find your next great read.</p>
+        </CardContent>
+        <CardActions>
+          <Button variant="text"><Link href={'/books'}>View books</Link></Button>
+        </CardActions>
+      </Card>
+      <Card>
+        <CardContent>
+          <h3>Like books</h3>
+          <p>Show your appreciation for the books you love. Like your favorite titles and help other readers discover the most popular books in our community.</p>
+        </CardContent>
+        <CardActions>
+          <Button variant="text"><Link href={'/profile/likes'}>View my likes</Link></Button>
+        </CardActions>
+      </Card>
+      <Card>
+        <CardContent>
+          <h3>Save them to read later</h3>
+          <p>Create your personal reading list by saving books you want to read in the future. Never forget a book that caught your interest again.</p>
+        </CardContent>
+        <CardActions>
+          <Button variant="text"><Link href={'/profile/list'}>View my reading list</Link></Button>
+        </CardActions>
+      </Card>
+      <Card>
+        <CardContent>
+          <h3>Write comments</h3>
+          <p>Share your thoughts and opinions on the books you &apos; ve read. Engage with other readers, discuss your favorite moments, and be part of our vibrant reading community.</p>
+        </CardContent>
+        <CardActions>
+          <Button variant="text"><Link href={'/comments'}>View my comments</Link></Button>
+        </CardActions>
+      </Card>
+      <div>
+      </div>
     </div>
   );
 }
