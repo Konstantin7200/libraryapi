@@ -1,11 +1,14 @@
 import { bookDto } from '../books/dto/bookDto';
+import { BooksApiPageSize } from '../constants';
 
 const API_BASE = 'https://openlibrary.org/search.json';
 
-async function getBooks(title?: string, author?: string) {
+async function searchBooks(page: number, title?: string, author?: string) {
   const params = new URLSearchParams();
   addParamIfNotEmpty(params, 'title', title);
   addParamIfNotEmpty(params, 'author', author);
+  addParamIfNotEmpty(params, 'page', page.toString());
+  addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
   const response = await fetch(`${API_BASE}?${params.toString()}`);
   const data: unknown = await response.json();
   const books = parseBooksFromData(data);
@@ -69,4 +72,4 @@ function addParamIfNotEmpty(
   if (value != undefined && value !== '') params.append(property, value);
 }
 
-export { getBooks };
+export { searchBooks };

@@ -6,10 +6,11 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
   @Get('/')
   async findMany(
-    @Query('title') title: string,
-    @Query('author') author: string,
+    @Query('page') page: number,
+    @Query('title') title?: string,
+    @Query('author') author?: string,
   ) {
-    const response = await this.booksService.findMany(title, author);
+    const response = await this.booksService.findMany(page, title, author);
     return response;
   }
   @Get('/:olid')
