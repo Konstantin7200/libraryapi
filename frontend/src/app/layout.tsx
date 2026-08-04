@@ -1,21 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.scss";
-import { Header } from "@/components/header/header";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.scss';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
+import { Header } from '@/components/header/header';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Books online",
-  description: "View and browse books online",
+  title: 'Books online',
+  description: 'View and browse books online',
 };
 
 export default function RootLayout({
@@ -26,9 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <Header></Header>
-        {children}
-        </body>
+        <AppRouterCacheProvider>
+          <Header></Header>
+          {children}
+        </AppRouterCacheProvider>
+      </body>
     </html>
   );
 }

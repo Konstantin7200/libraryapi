@@ -1,7 +1,7 @@
-import { AccountCircleOutlined } from "@mui/icons-material"
-import Link from "next/link"
-import st from "./header.module.scss"
-import { AppBar, Toolbar } from "@mui/material"
+import { AccountCircleOutlined } from '@mui/icons-material';
+import Link from 'next/link';
+import st from './header.module.scss';
+import { AppBar, Toolbar } from '@mui/material';
 
 export const Header = () => {
   return (
@@ -15,5 +15,5 @@ export const Header = () => {
         </Link>
       </Toolbar>
     </AppBar>
-  )
-}
+  );
+};

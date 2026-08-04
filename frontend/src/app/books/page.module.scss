@@ -2,6 +2,7 @@
 
 .page{
     @include mixins.page();
+    justify-content: space-between;
 }
 .BookCont{
     display: grid;
