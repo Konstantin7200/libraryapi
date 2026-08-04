@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { RedisCashe } from './redisCashe';
 import { Redis } from 'ioredis';
+import { MemoryCashe } from './memoryCashe';
+import NodeCache from 'node-cache';
 
 @Module({
   imports: [],
@@ -10,7 +12,9 @@ import { Redis } from 'ioredis';
       useFactory: () => new Redis(),
     },
     RedisCashe,
+    MemoryCashe,
+    NodeCache,
   ],
-  exports: [RedisCashe],
+  exports: [RedisCashe, MemoryCashe],
 })
 export class CasheModule {}
