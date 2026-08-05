@@ -1,7 +1,7 @@
 import { bookDto } from '../books/dto/bookDto';
 import { BooksApiPageSize } from '../constants';
 
-const API_BASE = 'https://openlibrary.org/search.json';
+const API_BASE = 'https://openlibrary.org/';
 
 async function searchBooks(page: number, title?: string, author?: string) {
   const params = new URLSearchParams();
@@ -9,11 +9,22 @@ async function searchBooks(page: number, title?: string, author?: string) {
   addParamIfNotEmpty(params, 'author', author);
   addParamIfNotEmpty(params, 'page', page.toString());
   addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
-  const response = await fetch(`${API_BASE}?${params.toString()}`);
+  const response = await fetch(`${API_BASE}/search.json?${params.toString()}`);
   const data: unknown = await response.json();
   const books = parseBooksFromData(data);
   return books;
 }
+async function getBook(olid: string) {
+  const response = await fetch(`${API_BASE}/works/${olid}`);
+  const data = (await response.json()) as ApiBookByOlid;
+  return data;
+}
+async function getAuthor(authorKey: string) {
+  const response = await fetch(`${API_BASE}/authors/${authorKey}.json`);
+  const data = (await response.json()) as ApiAuthor;
+  return data;
+}
+
 function parseBooksFromData(data: unknown): bookDto[] {
   const badDataFormatError = new Error('Bad data format');
   if (typeof data != 'object' || data === null) throw badDataFormatError;
@@ -34,11 +45,28 @@ function parseBooksFromData(data: unknown): bookDto[] {
       authors: author_name,
       olid: key,
       coversUrl: coversUrl,
+      liked: false,
     };
   });
   return books;
 }
-
+type ApiBookByOlid = {
+  description: {
+    value: string;
+  };
+  title: string;
+  authors: [
+    {
+      author: {
+        key: string;
+      };
+    },
+  ];
+  covers: number[];
+};
+type ApiAuthor = {
+  personal_name: string;
+};
 type ApiBook = {
   title: string;
   author_name: string[];
@@ -72,4 +100,4 @@ function addParamIfNotEmpty(
   if (value != undefined && value !== '') params.append(property, value);
 }
 
-export { searchBooks };
+export { searchBooks, getBook, getAuthor };

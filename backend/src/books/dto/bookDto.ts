@@ -3,8 +3,12 @@ type bookDto = {
   title: string;
   authors: string[];
   coversUrl: string | null;
+  liked: boolean;
 };
-export type { bookDto };
+type extendedBookDto = bookDto & {
+  description: string;
+};
+export type { bookDto, extendedBookDto };
 
 /*import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Like } from './likeEntity';

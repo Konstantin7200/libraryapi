@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { searchBooks } from '../api/bookApi';
+import { getAuthor, getBook, searchBooks } from '../api/bookApi';
 import { RedisCashe } from '../cashe/redisCashe';
 import { MemoryCashe } from '../cashe/memoryCashe';
+import { bookDto, extendedBookDto } from './dto/bookDto';
 
 @Injectable()
 export class BooksService {
@@ -10,8 +11,17 @@ export class BooksService {
     private readonly memoryCashe: MemoryCashe,
   ) {}
   async findOne(olid: string) {
-    const result = await this.redisCashe.getBook(olid);
-    return result;
+    const apiBook = await getBook(olid);
+    const authorsName = await getAuthor(apiBook.authors[0].author.key);
+    const book: extendedBookDto = {
+      title: apiBook.title,
+      description: apiBook.description.value,
+      authors: [authorsName.personal_name],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
+      liked: false,
+      olid: olid,
+    };
+    return book;
   }
   async findMany(
     page: number,

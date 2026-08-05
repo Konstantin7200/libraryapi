@@ -22,6 +22,7 @@ export class AuthController {
 
   @Post('/signup')
   async signUp(@Body() authDto: AuthDto, @Res() res: Response) {
+    console.log(authDto);
     const tokens = await this.authService.signUp(authDto);
     setCookies({ res, ...tokens });
     res.status(200).json(tokens);
