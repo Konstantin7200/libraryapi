@@ -47,7 +47,7 @@ export default function Home() {
         </CardContent>
         <CardActions>
           <Button variant="text">
-            <Link href={'/profile/list'}>View my reading list</Link>
+            <Link href={'/profile/lists'}>View my reading list</Link>
           </Button>
         </CardActions>
       </Card>
