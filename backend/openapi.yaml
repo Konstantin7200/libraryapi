@@ -1,0 +1,448 @@
+openapi: 3.1.0
+info:
+  title: Library API
+  description: "Backend API for a library app. Authentication is cookie-based: on login/signup an HTTP-only `libraryApiAccessToken` cookie is set; protected routes require it."
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Health check
+      operationId: getHello
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Hello World!
+
+  /auth/login:
+    post:
+      summary: Log in an existing user
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthDto'
+      responses:
+        '200':
+          description: Tokens issued, auth cookies set
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Sets `libraryApiAccessToken` and `libraryApiRefreshToken` HTTP-only cookies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+        '400':
+          description: Incorrect login or password
+
+  /auth/signup:
+    post:
+      summary: Register a new user
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthDto'
+      responses:
+        '200':
+          description: Tokens issued, auth cookies set
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Sets `libraryApiAccessToken` and `libraryApiRefreshToken` HTTP-only cookies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+        '400':
+          description: User with this login already exists
+
+  /auth/refresh:
+    post:
+      summary: Refresh the access token using the refresh token cookie
+      operationId: refresh
+      responses:
+        '200':
+          description: Access token refreshed, cookies updated
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '401':
+          description: Missing or invalid refresh token
+
+  /books:
+    get:
+      summary: Search books
+      description: Searches Open Library and returns a page of books. Results are cached.
+      operationId: findManyBooks
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: title
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: author
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A page of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '400':
+          description: Bad data format from upstream API
+
+  /books/{olid}:
+    get:
+      summary: Get a single book by Open Library ID
+      operationId: findOneBook
+      parameters:
+        - name: olid
+          in: path
+          required: true
+          schema:
+            type: string
+            example: /works/OL45804W
+      responses:
+        '200':
+          description: The book (may include an `expirationDate` when served from Redis cache)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedisBook'
+        '404':
+          description: Book not found in cache
+
+  /comments:
+    post:
+      summary: Add a comment to a book
+      operationId: addComment
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentDto'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: Get comments for the current user or for a book
+      description: With the auth cookie returns the current user's comments; with the `book` query parameter returns comments for a book.
+      operationId: getComments
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: book
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '401':
+          description: Unauthorized (when accessing user comments without a token)
+
+  /book-list:
+    get:
+      summary: Get the current user's book list
+      description: Optionally filtered by status.
+      operationId: getBookList
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/BookListStatus'
+      responses:
+        '200':
+          description: The user's book list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookListItem'
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Add a book to the current user's list
+      operationId: addBookToList
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookListItemDto'
+      responses:
+        '201':
+          description: Book added to list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookListItem'
+        '401':
+          description: Unauthorized
+
+  /likes:
+    post:
+      summary: Toggle a like on a book
+      operationId: toggleLike
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LikeDto'
+      responses:
+        '200':
+          description: Like toggled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Like'
+        '401':
+          description: Unauthorized
+
+  /likes/manual:
+    get:
+      summary: Subscribe to like-count updates via Server-Sent Events
+      operationId: streamLikes
+      responses:
+        '200':
+          description: SSE stream of like count changes
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  bookOlid:
+                    type: string
+                  likes:
+                    type: integer
+                    description: Number of likes for the book
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: libraryApiAccessToken
+      description: HTTP-only access token cookie set on login/signup/refresh.
+
+  schemas:
+    AuthDto:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+
+    Tokens:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          description: JWT, expires in 15 minutes
+        refreshToken:
+          type: string
+          description: JWT, expires in 7 days
+
+    Book:
+      type: object
+      required:
+        - olid
+        - title
+        - authors
+        - coversUrl
+      properties:
+        olid:
+          type: string
+          description: Open Library key
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        coversUrl:
+          type: string
+          nullable: true
+          description: Open Library cover URL
+
+    RedisBook:
+      allOf:
+        - $ref: '#/components/schemas/Book'
+        - type: object
+          required:
+            - expirationDate
+          properties:
+            expirationDate:
+              type: string
+              format: date-time
+
+    CommentDto:
+      type: object
+      required:
+        - bookOlid
+        - text
+      properties:
+        bookOlid:
+          type: string
+        text:
+          type: string
+
+    Comment:
+      type: object
+      required:
+        - id
+        - text
+        - createdAt
+        - updatedAt
+        - bookOlid
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        bookOlid:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    BookListItemDto:
+      type: object
+      required:
+        - bookOlid
+        - status
+      properties:
+        bookOlid:
+          type: string
+        status:
+          $ref: '#/components/schemas/BookListStatus'
+
+    BookListItem:
+      type: object
+      required:
+        - id
+        - status
+        - bookOlid
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: '#/components/schemas/BookListStatus'
+        bookOlid:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    BookListStatus:
+      type: string
+      enum:
+        - Want to read
+        - Currently reading
+        - Already read
+
+    LikeDto:
+      type: object
+      required:
+        - bookOlid
+      properties:
+        bookOlid:
+          type: string
+
+    Like:
+      type: object
+      required:
+        - id
+        - bookOlid
+      properties:
+        id:
+          type: integer
+        bookOlid:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      required:
+        - id
+        - login
+        - createdAt
+      properties:
+        id:
+          type: integer
+        login:
+          type: string
+        hashedPassword:
+          type: string
+          description: Never exposed in responses
+        createdAt:
+          type: string
+          format: date-time
