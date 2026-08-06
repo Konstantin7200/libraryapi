@@ -1,24 +1,59 @@
 import { Injectable } from '@nestjs/common';
-import { bookDto } from '../books/dto/bookDto';
 import { BooksApiPageSize } from '../constants';
 import { CallQueue } from './callQueue';
+import { MemoryCashe } from '../cashe/memoryCashe';
 
 const API_BASE = 'https://openlibrary.org/';
 
 @Injectable()
 export class bookApi {
-  constructor(private callQueue: CallQueue) {}
+  private readonly inFlight = new Map<string, Promise<unknown>>();
+
+  constructor(
+    private callQueue: CallQueue,
+    private memoryCashe: MemoryCashe,
+  ) {}
 
   async searchBooks(page: number, title?: string, author?: string) {
-    return this.callQueue.push(() => this._searchBooks(page, title, author));
+    return this.getOrRun(`search|${page}|${title || ''}|${author || ''}`, () =>
+      this._searchBooks(page, title, author),
+    );
   }
 
   async getBook(olid: string) {
-    return this.callQueue.push(() => this._getBook(olid));
+    return this.getOrRun(`book|${olid}`, () => this._getBook(olid));
   }
 
   async getAuthor(authorKey: string) {
-    return this.callQueue.push(() => this._getAuthor(authorKey), true);
+    return this.getOrRun(
+      `author|${authorKey}`,
+      () => this._getAuthor(authorKey),
+      true,
+    );
+  }
+
+  private getOrRun<T>(
+    key: string,
+    fetchFn: () => Promise<T>,
+    bypass?: true,
+  ): Promise<T> {
+    const cached = this.memoryCashe.getRaw<T>(key);
+    if (cached !== null) return Promise.resolve(cached);
+
+    const existing = this.inFlight.get(key);
+    if (existing) return existing as Promise<T>;
+
+    const promise = this.callQueue
+      .push(fetchFn, bypass)
+      .then((result) => {
+        this.memoryCashe.setRaw(key, result);
+        return result;
+      })
+      .finally(() => {
+        this.inFlight.delete(key);
+      });
+    this.inFlight.set(key, promise);
+    return promise;
   }
 
   private async _searchBooks(page: number, title?: string, author?: string) {
@@ -30,9 +65,8 @@ export class bookApi {
     const response = await fetch(
       `${API_BASE}/search.json?${params.toString()}`,
     );
-    const data: unknown = await response.json();
-    const books = parseBooksFromData(data);
-    return books;
+    const data = (await response.json()) as RawSearchResult;
+    return data;
   }
 
   private async _getBook(olid: string) {
@@ -48,31 +82,9 @@ export class bookApi {
   }
 }
 
-function parseBooksFromData(data: unknown): bookDto[] {
-  const badDataFormatError = new Error('Bad data format');
-  if (typeof data != 'object' || data === null) throw badDataFormatError;
-  if (!Object.hasOwn(data, 'docs')) throw badDataFormatError;
-  const docs = (data as { docs: object[] }).docs;
-
-  const books: bookDto[] = docs.map((book) => {
-    const validatedBook = validateData(book);
-    if (validatedBook === null) {
-      throw Error('Bad api response');
-    }
-    const { title, author_name, cover_i, key } = validatedBook;
-    const coversUrl = cover_i
-      ? `https://covers.openlibrary.org/b/id/${cover_i}-L.jpg`
-      : null;
-    return {
-      title: title,
-      authors: author_name,
-      olid: key.substring('/works/'.length),
-      coversUrl: coversUrl,
-      liked: false,
-    };
-  });
-  return books;
-}
+type RawSearchResult = {
+  docs: object[];
+};
 type ApiBookByOlid = {
   description: {
     value: string;
@@ -90,30 +102,6 @@ type ApiBookByOlid = {
 type ApiAuthor = {
   personal_name: string;
 };
-type ApiBook = {
-  title: string;
-  author_name: string[];
-  cover_i: string | null;
-  key: string;
-};
-
-function validateData(data: object): ApiBook | null {
-  if (
-    Object.hasOwn(data, 'title') &&
-    Object.hasOwn(data, 'author_name') &&
-    Object.hasOwn(data, 'key')
-  ) {
-    if (Object.hasOwn(data, 'cover_i')) return data as ApiBook;
-    else {
-      return {
-        ...(data as ApiBook),
-        cover_i: null,
-      };
-    }
-  } else {
-    return null;
-  }
-}
 
 function addParamIfNotEmpty(
   params: URLSearchParams,

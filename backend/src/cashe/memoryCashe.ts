@@ -15,11 +15,19 @@ export class MemoryCashe {
     return null;
   }
   getBook(query: string) {
-    const result = this.cache.get(query) as extendedBookDto | null;
+    const result: extendedBookDto | null | undefined = this.cache.get(query);
     return result;
   }
   setBook(query: string, book: extendedBookDto) {
     this.cache.set(query, book, MemoryCacheTtl);
+  }
+  getRaw<T>(key: string): T | null {
+    const result = this.cache.get<T>(key);
+    if (result === undefined) return null;
+    return result;
+  }
+  setRaw<T>(key: string, value: T) {
+    this.cache.set(key, value, MemoryCacheTtl);
   }
 }
 
