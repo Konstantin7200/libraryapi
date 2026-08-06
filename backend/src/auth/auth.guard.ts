@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
 
     const accessPayload = await this.verifyToken(accessToken);
     if (accessPayload === null) return false;
-    Object.defineProperty(req, 'userId', accessPayload.id);
+    Object.defineProperty(req, 'userId', { value: accessPayload.id });
     return true;
   }
   private async verifyToken(token: string) {

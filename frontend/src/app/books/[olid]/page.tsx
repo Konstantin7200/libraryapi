@@ -3,8 +3,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import st from './page.module.scss';
 import { getBook } from '@/lib/books';
-import { getCommentByOlid } from '@/lib/comments';
+import { createComment, getCommentByOlid } from '@/lib/comments';
 import { Comment } from '@/components/comment/comment';
+import { Button, TextField } from '@mui/material';
+import { refresh } from 'next/cache';
 
 interface PageProps {
     params: Promise<{ olid: string }>;
@@ -13,6 +15,16 @@ const Page: FC<PageProps> = async ({ params }) => {
     const olid = (await params).olid;
     const book = await getBook(olid);
     const comments = await getCommentByOlid(olid);
+
+    async function createCommentAction(formData: FormData) {
+        'use server';
+        const text = formData.get('text');
+        if (typeof text === 'string' && text.trim()) {
+            await createComment(olid, text);
+            refresh();
+        }
+    }
+
     return (
         <div className={st.page}>
             <Link href="/books" className={st.back}>
@@ -37,7 +49,14 @@ const Page: FC<PageProps> = async ({ params }) => {
             <p className={st.description}>{book.description}</p>
             <h2>Comments</h2>
             <div className={st.comments}>
-                {comments.map((comment, i) => (
+                <form action={createCommentAction} className={st.form}>
+                    <TextField name="text" label="Add a comment" required multiline />
+                    <Button type="submit" variant="outlined">Add comment</Button>
+                </form>
+                {
+                    comments.length===0&&<p>No comments here yet</p>
+                }
+                {comments.length!==0&&comments.map((comment, i) => (
                     <Comment key={i} text={comment.text} updatedAt={comment.updatedAt} />
                 ))}
             </div>

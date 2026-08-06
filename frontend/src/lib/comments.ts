@@ -10,3 +10,14 @@ export async function getCommentByOlid(olid: string) {
     const data=await result.json();
     return data as CommentType[];
 }
+
+export async function createComment(olid:string,text:string) {
+    const cookieHeader = (await cookies()).toString();
+    const result=await fetch(`${EnvConfig.API_BASE}/comments`, {
+        headers: cookieHeader ? { Cookie: cookieHeader } : {},
+        body:JSON.stringify({olid:olid,text:text}),
+        method:"POST"
+    })
+    const data=await result.json();
+    return data as CommentType[];   
+}
