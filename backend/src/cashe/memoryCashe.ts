@@ -22,8 +22,7 @@ function unknownIsBook(raw: unknown): raw is bookDto {
     Object.hasOwn(raw, 'olid') &&
     Object.hasOwn(raw, 'title') &&
     Object.hasOwn(raw, 'authors') &&
-    Object.hasOwn(raw, 'coversUrl') &&
-    Object.hasOwn(raw, 'expirationDate')
+    Object.hasOwn(raw, 'coversUrl')
   )
     return true;
   return false;

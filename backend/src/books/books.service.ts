@@ -39,7 +39,6 @@ export class BooksService {
     const cachedData = this.memoryCashe.getBooks(
       createQuery(page, title, author),
     );
-    console.log(createQuery(page, title, author));
     if (cachedData !== null) return cachedData;
     const data = await this.bookApi.searchBooks(page, title, author);
     this.memoryCashe.setBooks(createQuery(page, title, author), data);
