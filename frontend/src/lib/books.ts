@@ -1,4 +1,4 @@
-import { BookType } from '@/types/BookTypes';
+import { BookType, ExtendedBookType } from '@/types/BookTypes';
 import { EnvConfig } from '@/constants';
 
 type SearchParam = string | string[] | undefined;
@@ -17,4 +17,9 @@ export async function getBooks(params: GetBooksParams = {}): Promise<BookType[]>
 
   const response = await fetch(`${EnvConfig.API_BASE}/books?${query.toString()}`);
   return (await response.json()) as BookType[];
+}
+
+export async function getBook(olid:string):Promise<ExtendedBookType>{
+  const response=await fetch(`${EnvConfig.API_BASE}/books/${olid}`);
+  return (await response.json()) as ExtendedBookType;
 }

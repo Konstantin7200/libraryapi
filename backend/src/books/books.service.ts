@@ -16,9 +16,14 @@ export class BooksService {
     const authorsName = await this.bookApi.getAuthor(
       apiBook.authors[0].author.key.substring('/authors/'.length),
     );
+    const stringEnd =
+      apiBook.description.value.indexOf('----------') !== -1
+        ? apiBook.description.value.indexOf('----------')
+        : apiBook.description.value.length;
+    const description = apiBook.description.value.substring(0, stringEnd);
     const book: extendedBookDto = {
       title: apiBook.title,
-      description: apiBook.description.value,
+      description: description,
       authors: [authorsName.personal_name],
       coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
       liked: false,

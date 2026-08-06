@@ -66,7 +66,7 @@ function parseBooksFromData(data: unknown): bookDto[] {
     return {
       title: title,
       authors: author_name,
-      olid: key,
+      olid: key.substring('/works/'.length),
       coversUrl: coversUrl,
       liked: false,
     };

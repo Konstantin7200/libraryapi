@@ -3,6 +3,7 @@ import { EnvConfig } from "@/constants";
 async function signUp(login: string, password: string) {
     const response = await fetch(`${EnvConfig.API_BASE}/auth/signup`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             login: login,
             password: password
@@ -13,6 +14,7 @@ async function signUp(login: string, password: string) {
 async function login(login: string, password: string) {
     const response = await fetch(`${EnvConfig.API_BASE}/auth/login`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             login: login,
             password: password
