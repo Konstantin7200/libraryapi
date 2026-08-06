@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import NodeCache from 'node-cache';
-import { bookDto } from '../books/dto/bookDto';
+import { bookDto, extendedBookDto } from '../books/dto/bookDto';
 import { MemoryCacheTtl } from '../constants';
 
 @Injectable()
@@ -13,6 +13,13 @@ export class MemoryCashe {
     const result = this.cache.get(query);
     if (unknownIsBookArray(result)) return result;
     return null;
+  }
+  getBook(query: string) {
+    const result = this.cache.get(query) as extendedBookDto | null;
+    return result;
+  }
+  setBook(query: string, book: extendedBookDto) {
+    this.cache.set(query, book, MemoryCacheTtl);
   }
 }
 

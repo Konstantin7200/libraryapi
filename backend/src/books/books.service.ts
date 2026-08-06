@@ -12,6 +12,9 @@ export class BooksService {
     private readonly bookApi: bookApi,
   ) {}
   async findOne(olid: string) {
+    const cachedData = this.memoryCashe.getBook(createQueryFromOlid(olid));
+    if (cachedData !== null) return cachedData;
+
     const apiBook = await this.bookApi.getBook(olid);
     const authorsName = await this.bookApi.getAuthor(
       apiBook.authors[0].author.key.substring('/authors/'.length),
@@ -29,6 +32,7 @@ export class BooksService {
       liked: false,
       olid: olid,
     };
+    this.memoryCashe.setBook(createQueryFromOlid(olid), book);
     return book;
   }
   async findMany(
@@ -47,3 +51,4 @@ export class BooksService {
 }
 const createQuery = (page: number, title?: string, author?: string) =>
   `${page}|${title || ''}|${author || ''}`;
+const createQueryFromOlid = (olid: string) => `${olid}`;
