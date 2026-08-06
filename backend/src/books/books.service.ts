@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { getAuthor, getBook, searchBooks } from '../api/bookApi';
+import { bookApi } from '../api/bookApi';
 import { RedisCashe } from '../cashe/redisCashe';
 import { MemoryCashe } from '../cashe/memoryCashe';
-import { bookDto, extendedBookDto } from './dto/bookDto';
+import { extendedBookDto } from './dto/bookDto';
 
 @Injectable()
 export class BooksService {
   constructor(
     private readonly redisCashe: RedisCashe,
     private readonly memoryCashe: MemoryCashe,
+    private readonly bookApi: bookApi,
   ) {}
   async findOne(olid: string) {
-    const apiBook = await getBook(olid);
-    const authorsName = await getAuthor(apiBook.authors[0].author.key);
+    const apiBook = await this.bookApi.getBook(olid);
+    const authorsName = await this.bookApi.getAuthor(
+      apiBook.authors[0].author.key.substring('/authors/'.length),
+    );
     const book: extendedBookDto = {
       title: apiBook.title,
       description: apiBook.description.value,
@@ -33,7 +36,7 @@ export class BooksService {
     );
     console.log(createQuery(page, title, author));
     if (cachedData !== null) return cachedData;
-    const data = await searchBooks(page, title, author);
+    const data = await this.bookApi.searchBooks(page, title, author);
     this.memoryCashe.setBooks(createQuery(page, title, author), data);
     return data;
   }

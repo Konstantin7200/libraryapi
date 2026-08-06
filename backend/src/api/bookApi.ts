@@ -1,28 +1,51 @@
+import { Injectable } from '@nestjs/common';
 import { bookDto } from '../books/dto/bookDto';
 import { BooksApiPageSize } from '../constants';
+import { CallQueue } from './callQueue';
 
 const API_BASE = 'https://openlibrary.org/';
 
-async function searchBooks(page: number, title?: string, author?: string) {
-  const params = new URLSearchParams();
-  addParamIfNotEmpty(params, 'title', title);
-  addParamIfNotEmpty(params, 'author', author);
-  addParamIfNotEmpty(params, 'page', page.toString());
-  addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
-  const response = await fetch(`${API_BASE}/search.json?${params.toString()}`);
-  const data: unknown = await response.json();
-  const books = parseBooksFromData(data);
-  return books;
-}
-async function getBook(olid: string) {
-  const response = await fetch(`${API_BASE}/works/${olid}`);
-  const data = (await response.json()) as ApiBookByOlid;
-  return data;
-}
-async function getAuthor(authorKey: string) {
-  const response = await fetch(`${API_BASE}/authors/${authorKey}.json`);
-  const data = (await response.json()) as ApiAuthor;
-  return data;
+@Injectable()
+export class bookApi {
+  constructor(private callQueue: CallQueue) {}
+
+  async searchBooks(page: number, title?: string, author?: string) {
+    return this.callQueue.push(() => this._searchBooks(page, title, author));
+  }
+
+  async getBook(olid: string) {
+    return this.callQueue.push(() => this._getBook(olid));
+  }
+
+  async getAuthor(authorKey: string) {
+    return this.callQueue.push(() => this._getAuthor(authorKey), true);
+  }
+
+  private async _searchBooks(page: number, title?: string, author?: string) {
+    const params = new URLSearchParams();
+    addParamIfNotEmpty(params, 'title', title);
+    addParamIfNotEmpty(params, 'author', author);
+    addParamIfNotEmpty(params, 'page', page.toString());
+    addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
+    const response = await fetch(
+      `${API_BASE}/search.json?${params.toString()}`,
+    );
+    const data: unknown = await response.json();
+    const books = parseBooksFromData(data);
+    return books;
+  }
+
+  private async _getBook(olid: string) {
+    const response = await fetch(`${API_BASE}/works/${olid}.json`);
+    const data = (await response.json()) as ApiBookByOlid;
+    return data;
+  }
+
+  private async _getAuthor(authorKey: string) {
+    const response = await fetch(`${API_BASE}/authors/${authorKey}.json`);
+    const data = (await response.json()) as ApiAuthor;
+    return data;
+  }
 }
 
 function parseBooksFromData(data: unknown): bookDto[] {
@@ -99,5 +122,3 @@ function addParamIfNotEmpty(
 ) {
   if (value != undefined && value !== '') params.append(property, value);
 }
-
-export { searchBooks, getBook, getAuthor };
