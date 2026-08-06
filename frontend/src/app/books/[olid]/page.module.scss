@@ -8,6 +8,13 @@
     padding-top: 2.5rem;
 }
 
+.comments {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
 .back {
     align-self: flex-start;
     font-size: 0.95rem;

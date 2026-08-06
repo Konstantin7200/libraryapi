@@ -14,6 +14,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
     const cookies = req.cookies;
+    console.log(cookies);
     const accessToken: unknown = cookies[AccessTokenCookie];
 
     if (typeof accessToken !== 'string') throw new Error('Access denied');

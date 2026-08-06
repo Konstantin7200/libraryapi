@@ -2,11 +2,13 @@ import { LoginForm } from "@/components/LoginForm/LoginForm"
 import st from "./page.module.scss"
 import { signUp } from "@/lib/auth"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 const Page=()=>{
     const signUpFunc=async(login:string,password:string)=>{
         'use server';
         await signUp(login,password);
+        redirect("/books");
     }
     return(
         <div className={st.page}>

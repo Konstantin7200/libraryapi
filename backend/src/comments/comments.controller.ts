@@ -17,13 +17,13 @@ export class CommentsController {
     await this.commentsService.createComment(comment, userId);
   }
   @UseGuards(AuthGuard)
-  @Get()
+  @Get('mine')
   async getCommentsByUser(@UserId() userId: number | null) {
     if (userId === null) throw Error('Null id from the token');
-    await this.commentsService.getCommentsByUser(userId);
+    return this.commentsService.getCommentsByUser(userId);
   }
   @Get()
-  async getCommentsByBook(@Query('book') bookOlid: string) {
-    await this.commentsService.getCommentsByBook(bookOlid);
+  async getCommentsByBook(@Query('olid') bookOlid: string) {
+    return this.commentsService.getCommentsByBook(bookOlid);
   }
 }

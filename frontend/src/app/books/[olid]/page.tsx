@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import st from './page.module.scss';
 import { getBook } from '@/lib/books';
+import { getCommentByOlid } from '@/lib/comments';
+import { Comment } from '@/components/comment/comment';
 
 interface PageProps {
     params: Promise<{ olid: string }>;
@@ -10,6 +12,7 @@ interface PageProps {
 const Page: FC<PageProps> = async ({ params }) => {
     const olid = (await params).olid;
     const book = await getBook(olid);
+    const comments = await getCommentByOlid(olid);
     return (
         <div className={st.page}>
             <Link href="/books" className={st.back}>
@@ -32,6 +35,12 @@ const Page: FC<PageProps> = async ({ params }) => {
             </div>
             <h2>Description</h2>
             <p className={st.description}>{book.description}</p>
+            <h2>Comments</h2>
+            <div className={st.comments}>
+                {comments.map((comment, i) => (
+                    <Comment key={i} text={comment.text} updatedAt={comment.updatedAt} />
+                ))}
+            </div>
         </div>
     );
 };
