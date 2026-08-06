@@ -1,8 +1,10 @@
 import { Button, Card, CardActions, CardContent } from '@mui/material';
 import styles from './page.module.scss';
 import Link from 'next/link';
+import { isLoggedIn } from '@/lib/auth';
 
-export default function Home() {
+export default async function Home() {
+  const loggedIn = await isLoggedIn();
   return (
     <div className={styles.page}>
       <h1>Welcome to the best online books library</h1>
@@ -33,7 +35,11 @@ export default function Home() {
         </CardContent>
         <CardActions>
           <Button variant="text">
-            <Link href={'/profile/likes'}>View my likes</Link>
+            {loggedIn === true ? (
+              <Link href={'/profile/likes'}>View my likes</Link>
+            ) : (
+              <Link href={'/login'}>Login</Link>
+            )}
           </Button>
         </CardActions>
       </Card>
@@ -47,7 +53,11 @@ export default function Home() {
         </CardContent>
         <CardActions>
           <Button variant="text">
-            <Link href={'/profile/lists'}>View my reading list</Link>
+            {loggedIn === true ? (
+              <Link href={'/profile/lists'}>View my reading list</Link>
+            ) : (
+              <Link href={'/login'}>Login</Link>
+            )}
           </Button>
         </CardActions>
       </Card>
@@ -62,7 +72,11 @@ export default function Home() {
         </CardContent>
         <CardActions>
           <Button variant="text">
-            <Link href={'/comments'}>View my comments</Link>
+            {loggedIn === true ? (
+              <Link href={'/comments'}>View my comments</Link>
+            ) : (
+              <Link href={'/login'}>Login</Link>
+            )}
           </Button>
         </CardActions>
       </Card>

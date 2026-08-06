@@ -9,9 +9,12 @@ import { redirect } from 'next/navigation';
 export const Book: FC<BookType> = ({ olid, coversUrl, title, authors }) => {
   const authorsString = authors.join(' ,');
   return (
-    <div className={st.Book} onClick={()=>{
-      redirect(`/books/${olid}`)
-    }}>
+    <div
+      className={st.Book}
+      onClick={() => {
+        redirect(`/books/${olid}`);
+      }}
+    >
       <Image
         src={coversUrl}
         width={'300'}

@@ -1,7 +1,6 @@
+type CommentType = {
+  text: string;
+  updatedAt: Date;
+};
 
-type CommentType={
-    text:string
-    updatedAt:Date
-}
-
-export type {CommentType}
+export type { CommentType };

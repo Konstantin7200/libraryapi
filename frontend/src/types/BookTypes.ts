@@ -4,8 +4,8 @@ type BookType = {
   title: string;
   authors: string[];
 };
-type ExtendedBookType=BookType&{
-  description:string
-}
+type ExtendedBookType = BookType & {
+  description: string;
+};
 
-export type { BookType,ExtendedBookType };
+export type { BookType, ExtendedBookType };

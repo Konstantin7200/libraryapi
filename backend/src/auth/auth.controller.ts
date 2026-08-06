@@ -25,19 +25,18 @@ export class AuthController {
       ...tokens,
       secure: this.configService.get<boolean>('COOKIE_SECURE', false),
     });
-    res.status(200).json(tokens);
+    res.status(200).send('OK');
   }
 
   @Post('/signup')
   async signUp(@Body() authDto: AuthDto, @Res() res: Response) {
-    console.log(authDto);
     const tokens = await this.authService.signUp(authDto);
     setCookies({
       res,
       ...tokens,
       secure: this.configService.get<boolean>('COOKIE_SECURE', false),
     });
-    res.status(200).json(tokens);
+    res.status(200).send('OK');
   }
   @Post('/refresh')
   async refresh(@Res() res: Response) {

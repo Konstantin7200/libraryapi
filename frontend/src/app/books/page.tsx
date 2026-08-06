@@ -19,7 +19,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
       `/books?${title ? `title=${title}&` : ''}${author ? `author=${author}&` : ''}${page ? `page=${page}` : ''}`,
     );
   };
-  const handleSearch = async(title: string, author: string) => {
+  const handleSearch = async (title: string, author: string) => {
     'use server';
     redirect(
       `/books?${title ? `title=${title}&` : ''}${author ? `author=${author}&` : ''}page=1`,
@@ -29,7 +29,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     <div className={st.page}>
       <h1>Books</h1>
       <BookToolbar handleSearch={handleSearch} />
-      <BookCont books={data}/>
+      <BookCont books={data} />
       <Pagination
         handleChange={handleChange}
         page={parseInt(page as string)}
