@@ -1,3 +1,3 @@
 export const EnvConfig = {
-  API_BASE: process.env.API_BASE,
+  API_BASE: process.env.NEXT_PUBLIC_API_BASE,
 };

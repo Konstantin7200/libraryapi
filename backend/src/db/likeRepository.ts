@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, In, Repository } from 'typeorm';
 import { Like } from './entities/likeEntity';
-import { User } from './entities/userEntity';
 
 @Injectable()
 export class LikeRepository {
@@ -10,17 +9,17 @@ export class LikeRepository {
     @InjectRepository(Like)
     private readonly repo: Repository<Like>,
   ) {}
-  async addLike(bookOlid: string, user: User) {
+  async addLike(bookOlid: string, userId: number) {
     const like: DeepPartial<Like> = {
       bookOlid: bookOlid,
-      user: user,
+      user: { id: userId },
     };
     const likeCreated = await this.repo.save(like);
     return likeCreated;
   }
-  async getLike(bookOlid: string, user: User) {
+  async getLike(bookOlid: string, userId: number) {
     const likeFound = await this.repo.findOneBy({
-      user: user,
+      user: { id: userId },
       bookOlid: bookOlid,
     });
     return likeFound;
@@ -34,5 +33,13 @@ export class LikeRepository {
       bookOlid: bookOlid,
     });
     return count;
+  }
+  async getLikedOlids(userId: number, olids: string[]): Promise<Set<string>> {
+    if (olids.length === 0) return new Set();
+    const likes = await this.repo.findBy({
+      user: { id: userId },
+      bookOlid: In(olids),
+    });
+    return new Set(likes.map((l) => l.bookOlid));
   }
 }

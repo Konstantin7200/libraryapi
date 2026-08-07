@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { bookApi } from '../api/bookApi';
 import { bookDto, extendedBookDto } from './dto/bookDto';
+import { UserRepository } from '../db/userRepository';
+import { LikeRepository } from '../db/likeRepository';
 
 @Injectable()
 export class BooksService {
-  constructor(private readonly bookApi: bookApi) {}
-  async findOne(olid: string) {
+  constructor(
+    private readonly bookApi: bookApi,
+    private readonly userRepository: UserRepository,
+    private readonly likeRepository: LikeRepository,
+  ) {}
+  async findOne(olid: string, userId?: number | null) {
     const apiBook = await this.bookApi.getBook(olid);
     const authorsName = await this.bookApi.getAuthor(
       apiBook.authors[0].author.key.substring('/authors/'.length),
@@ -15,12 +21,13 @@ export class BooksService {
         ? apiBook.description.value.indexOf('----------')
         : apiBook.description.value.length;
     const description = apiBook.description.value.substring(0, stringEnd);
+    const liked = await this.isLiked(olid, userId);
     const book: extendedBookDto = {
       title: apiBook.title,
       description: description,
       authors: [authorsName.personal_name],
       coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
-      liked: false,
+      liked: liked,
       olid: olid,
     };
     return book;
@@ -29,9 +36,21 @@ export class BooksService {
     page: number,
     title?: string,
     author?: string,
+    userId?: number | null,
   ): Promise<bookDto[]> {
     const data = await this.bookApi.searchBooks(page, title, author);
-    return mapToBookList(data.docs);
+    const books = mapToBookList(data.docs);
+    if (userId == null) return books;
+    const likedOlids = await this.likeRepository.getLikedOlids(
+      userId,
+      books.map((b) => b.olid),
+    );
+    return books.map((b) => ({ ...b, liked: likedOlids.has(b.olid) }));
+  }
+  private async isLiked(olid: string, userId?: number | null) {
+    if (userId == null) return false;
+    const like = await this.likeRepository.getLike(olid, userId);
+    return like !== null;
   }
 }
 

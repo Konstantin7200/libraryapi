@@ -1,21 +1,15 @@
-import { EnvConfig } from '@/constants';
 import { CommentType } from '@/types/CommentType';
-import { cookies } from 'next/headers';
+import { apiFetch } from './apiWrapper';
 
 export async function getCommentByOlid(olid: string) {
-  const cookieHeader = (await cookies()).toString();
-  const result = await fetch(`${EnvConfig.API_BASE}/comments?olid=${olid}`, {
-    headers: cookieHeader ? { Cookie: cookieHeader } : {},
-  });
+  const result = await apiFetch(`/comments?olid=${olid}`);
   const data = await result.json();
   return data as CommentType[];
 }
 
 export async function createComment(olid: string, text: string) {
-  const cookieHeader = (await cookies()).toString();
-  const result = await fetch(`${EnvConfig.API_BASE}/comments`, {
-    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
-    body: JSON.stringify({ bookOlid: olid, text: text }),
+  await apiFetch('/comments', {
     method: 'POST',
+    body: { bookOlid: olid, text: text },
   });
 }

@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
+import { AttachUserIdGuard } from './attachUserId.guard';
 import { DatabaseModule } from '../db/db.module';
 
 @Module({
@@ -19,7 +20,7 @@ import { DatabaseModule } from '../db/db.module';
     DatabaseModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard],
-  exports: [AuthGuard, JwtModule, ConfigModule],
+  providers: [AuthService, AuthGuard, AttachUserIdGuard],
+  exports: [AuthGuard, AttachUserIdGuard, JwtModule, ConfigModule],
 })
 export class AuthModule {}

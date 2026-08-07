@@ -71,13 +71,13 @@ function setCookies({
   secure,
 }: setCookiesParams) {
   res.cookie(AccessTokenCookie, accessToken, {
-    maxAge: AccessTokenMaxAge,
+    maxAge: AccessTokenMaxAge * 1000,
     httpOnly: true,
     sameSite: true,
     secure,
   });
   res.cookie(RefreshTokenCookie, refreshToken, {
-    maxAge: RefreshTokenMaxAge,
+    maxAge: RefreshTokenMaxAge * 1000,
     httpOnly: true,
     sameSite: true,
     secure,

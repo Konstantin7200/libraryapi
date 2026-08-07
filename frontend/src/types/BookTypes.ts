@@ -3,6 +3,7 @@ type BookType = {
   coversUrl: string;
   title: string;
   authors: string[];
+  liked:boolean;
 };
 type ExtendedBookType = BookType & {
   description: string;

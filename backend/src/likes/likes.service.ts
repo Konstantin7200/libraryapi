@@ -16,11 +16,9 @@ export class LikesService {
   private likeEvents = new Subject<LikeEventType>();
   readonly likes = this.likeEvents.asObservable();
   async toggleLike(bookOlid: string, userId: number) {
-    const user = await this.userRepository.findOneById(userId);
-    if (user === null) throw Error('User is null');
-    const likeFound = await this.likeRepository.getLike(bookOlid, user);
+    const likeFound = await this.likeRepository.getLike(bookOlid, userId);
     if (likeFound === null) {
-      const result = await this.likeRepository.addLike(bookOlid, user);
+      const result = await this.likeRepository.addLike(bookOlid, userId);
       return result;
     }
     const result = await this.likeRepository.removeLike(likeFound);
