@@ -86,3 +86,11 @@
         color: #333;
     }
 }
+.LikeWrapper{
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    font-size:4rem;
+    align-items:center;
+    justify-content: space-between;
+}

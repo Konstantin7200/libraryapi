@@ -7,6 +7,7 @@ type bookDto = {
 };
 type extendedBookDto = bookDto & {
   description: string;
+  likes: number;
 };
 export type { bookDto, extendedBookDto };
 

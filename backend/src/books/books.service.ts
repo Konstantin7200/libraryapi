@@ -22,12 +22,14 @@ export class BooksService {
         : apiBook.description.value.length;
     const description = apiBook.description.value.substring(0, stringEnd);
     const liked = await this.isLiked(olid, userId);
+    const likes = await this.likeRepository.getLikesByBook(olid);
     const book: extendedBookDto = {
       title: apiBook.title,
       description: description,
       authors: [authorsName.personal_name],
       coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
       liked: liked,
+      likes: likes,
       olid: olid,
     };
     return book;

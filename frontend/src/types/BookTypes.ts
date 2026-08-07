@@ -7,6 +7,7 @@ type BookType = {
 };
 type ExtendedBookType = BookType & {
   description: string;
+  likes:number;
 };
 
 export type { BookType, ExtendedBookType };

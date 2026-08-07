@@ -8,6 +8,7 @@ import { Comment } from '@/components/comment/comment';
 import { Button, TextField } from '@mui/material';
 import { refresh } from 'next/cache';
 import { isLoggedIn } from '@/lib/auth';
+import { Like } from '@/components/like/like';
 
 interface PageProps {
   params: Promise<{ olid: string }>;
@@ -45,6 +46,10 @@ const Page: FC<PageProps> = async ({ params }) => {
         <div className={st.details}>
           <h1 className={st.title}>{book.title}</h1>
           <p className={st.author}>{book.authors.join(' ,')}</p>
+          <div className={st.LikeWrapper}>
+            <p>{book.likes} {book.likes===1?"Like":"Likes"}</p>
+            <Like position='relative' liked={book.liked} olid={olid}/>
+          </div>
         </div>
       </div>
       <h2>Description</h2>
