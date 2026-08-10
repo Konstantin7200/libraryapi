@@ -26,6 +26,7 @@ import { LikeRepository } from './likeRepository';
           password: config.dbPassword,
           database: config.dbName,
           entities: [Like, Comment, User, BookListItem],
+          synchronize: true,
         };
       },
     }),
