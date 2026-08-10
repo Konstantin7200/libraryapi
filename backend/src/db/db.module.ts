@@ -25,6 +25,7 @@ import { LikeRepository } from './likeRepository';
           username: config.dbUsername,
           password: config.dbPassword,
           database: config.dbName,
+          ssl: { rejectUnauthorized: false },
           entities: [Like, Comment, User, BookListItem],
           synchronize: true,
         };
