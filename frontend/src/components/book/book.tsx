@@ -11,7 +11,7 @@ export const Book: FC<BookType> = ({ olid, coversUrl, title, authors, liked }) =
   const authorsString = authors.join(' ,');
   
   return (
-    <Link href={`books/${olid}`}>
+    <Link href={`/books/${olid}`}>
       <div className={st.Book}>
         <div className={st.ImageWrapper}>
         <Image
