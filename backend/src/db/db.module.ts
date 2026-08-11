@@ -28,6 +28,9 @@ import { LikeRepository } from './likeRepository';
           ssl: { rejectUnauthorized: false },
           entities: [Like, Comment, User, BookListItem],
           synchronize: true,
+          retryAttempts: 1,
+          retryDelay: 1000,
+          connectTimeoutMS: 10000,
         };
       },
     }),

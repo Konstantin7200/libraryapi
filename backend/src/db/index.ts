@@ -16,6 +16,8 @@ export async function initializeDataSource(configService: ConfigService) {
     password: config.dbPassword,
     database: config.dbName,
     entities: [Like, Comment, User, BookListItem],
+    ssl: { rejectUnauthorized: false },
+    connectTimeoutMS: 10000,
   });
   await dataSource.initialize();
   return dataSource;

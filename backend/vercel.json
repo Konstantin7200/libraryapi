@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/pg*/**,node_modules/postgres-*/**,node_modules/xtend/**,node_modules/split2/**"
+    }
+  },
+  "rewrites": [
+    { "source": "(.*)", "destination": "/api/index.ts" }
+  ]
+}
