@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Sse, UseGuards } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import type { LikeDto } from './dto/like.dto';
 import { UserId } from '../auth/userId.decorator';
@@ -12,6 +12,12 @@ export class LikesController {
   async toggleLike(@Body() like: LikeDto, @UserId() userId) {
     const result = await this.likesService.toggleLike(like.bookOlid, userId);
     await this.likesService.likesChanged(like.bookOlid);
+    return result;
+  }
+  @Get()
+  @UseGuards(AuthGuard)
+  async getLikesByUser(@UserId() userId: number) {
+    const result = await this.likesService.getLikedBooksByUser(userId);
     return result;
   }
   @Sse('manual')

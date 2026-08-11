@@ -25,7 +25,7 @@ export class BooksController {
   @UseGuards(AttachUserIdGuard)
   @Get('/:olid')
   async findOne(@Param('olid') olid: string, @UserId() userId?: number | null) {
-    const response = await this.booksService.findOne(olid, userId);
+    const response = await this.booksService.findOneDetailed(olid, userId);
     return response;
   }
 }

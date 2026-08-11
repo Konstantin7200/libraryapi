@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { bookApi } from '../api/bookApi';
+import { BookApi } from '../api/bookApi';
 import { bookDto, extendedBookDto } from './dto/bookDto';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
+import { mapToBookList } from '../utils/mapToBookList';
 
 @Injectable()
 export class BooksService {
   constructor(
-    private readonly bookApi: bookApi,
+    private readonly bookApi: BookApi,
     private readonly userRepository: UserRepository,
     private readonly likeRepository: LikeRepository,
   ) {}
-  async findOne(olid: string, userId?: number | null) {
+  async findOneDetailed(olid: string, userId?: number | null) {
     const apiBook = await this.bookApi.getBook(olid);
     const authorsName = await this.bookApi.getAuthor(
       apiBook.authors[0].author.key.substring('/authors/'.length),
@@ -30,6 +31,20 @@ export class BooksService {
       coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
       liked: liked,
       likes: likes,
+      olid: olid,
+    };
+    return book;
+  }
+  async findOne(olid: string) {
+    const apiBook = await this.bookApi.getBook(olid);
+    const authorsName = await this.bookApi.getAuthor(
+      apiBook.authors[0].author.key.substring('/authors/'.length),
+    );
+    const book: bookDto = {
+      title: apiBook.title,
+      authors: [authorsName.personal_name],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
+      liked: false,
       olid: olid,
     };
     return book;
@@ -53,49 +68,5 @@ export class BooksService {
     if (userId == null) return false;
     const like = await this.likeRepository.getLike(olid, userId);
     return like !== null;
-  }
-}
-
-const mapToBookList = (docs: object[]): bookDto[] =>
-  docs.map((book) => {
-    const validatedBook = validateData(book);
-    if (validatedBook === null) {
-      throw Error('Bad api response');
-    }
-    const { title, author_name, cover_i, key } = validatedBook;
-    const coversUrl = cover_i
-      ? `https://covers.openlibrary.org/b/id/${cover_i}-L.jpg`
-      : null;
-    return {
-      title: title,
-      authors: author_name,
-      olid: key.substring('/works/'.length),
-      coversUrl: coversUrl,
-      liked: false,
-    };
-  });
-
-type ApiBook = {
-  title: string;
-  author_name: string[];
-  cover_i: string | null;
-  key: string;
-};
-
-function validateData(data: object): ApiBook | null {
-  if (
-    Object.hasOwn(data, 'title') &&
-    Object.hasOwn(data, 'author_name') &&
-    Object.hasOwn(data, 'key')
-  ) {
-    if (Object.hasOwn(data, 'cover_i')) return data as ApiBook;
-    else {
-      return {
-        ...(data as ApiBook),
-        cover_i: null,
-      };
-    }
-  } else {
-    return null;
   }
 }

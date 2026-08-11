@@ -6,7 +6,7 @@ import { MemoryCashe } from '../cashe/memoryCashe';
 const API_BASE = 'https://openlibrary.org/';
 
 @Injectable()
-export class bookApi {
+export class BookApi {
   private readonly inFlight = new Map<string, Promise<unknown>>();
 
   constructor(

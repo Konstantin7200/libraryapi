@@ -42,4 +42,10 @@ export class LikeRepository {
     });
     return new Set(likes.map((l) => l.bookOlid));
   }
+  async getLikesByUser(userId: number) {
+    const result = await this.repo.findBy({
+      user: { id: userId },
+    });
+    return result;
+  }
 }

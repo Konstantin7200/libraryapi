@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BooksController } from './books.controller';
 import { BooksService } from './books.service';
-import { bookApi } from '../api/bookApi';
+import { BookApi } from '../api/bookApi';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
 import { JwtService } from '@nestjs/jwt';
@@ -15,7 +15,7 @@ describe('BooksController', () => {
       controllers: [BooksController],
       providers: [
         BooksService,
-        { provide: bookApi, useValue: {} },
+        { provide: BookApi, useValue: {} },
         { provide: UserRepository, useValue: {} },
         { provide: LikeRepository, useValue: {} },
         { provide: JwtService, useValue: {} },
