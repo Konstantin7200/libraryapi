@@ -8,11 +8,10 @@ async function authenticate(
   login_: string,
   password: string,
 ) {
-  const response = await apiFetch(
-    `/auth/${path}`,
-    { method: 'POST', body: { login: login_, password } },
-    { retryOnUnauthorized: false },
-  );
+  const response = await apiFetch(`/auth/${path}`, {
+    method: 'POST',
+    body: { login: login_, password },
+  });
 
   if (!response.ok) {
     throw new Error(await response.text());

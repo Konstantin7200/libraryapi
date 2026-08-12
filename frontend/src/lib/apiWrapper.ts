@@ -1,105 +1,48 @@
-import { cookies } from 'next/headers';
-import { EnvConfig } from '@/constants';
+'use server'
 
-type CookieStore = Awaited<ReturnType<typeof cookies>>;
+import { cookies, headers } from 'next/headers';
+import { EnvConfig } from '@/constants';
+import {
+  AccessTokenCookie,
+  ForwardedAccessTokenHeader,
+  RefreshTokenCookie,
+  parseSetCookie,
+} from './cookie';
+import type { ParsedCookie } from './cookie';
+
+export type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
+export async function applySetCookie(store: CookieStore, header: string) {
+  const { name, value, options }: ParsedCookie = parseSetCookie(header);
+  store.set(name, value, options);
+}
 
 type ApiOptions = {
   method?: string;
   body?: unknown;
 };
 
-type ApiFetchOptions = {
-  retryOnUnauthorized?: boolean;
-};
-
-export function applySetCookie(store: CookieStore, header: string): void {
-  const [nameValue, ...attributeParts] = header.split(';');
-  const separator = nameValue.indexOf('=');
-  const name = nameValue.slice(0, separator);
-  const value = nameValue.slice(separator + 1);
-  const options: {
-    maxAge?: number;
-    path?: string;
-    domain?: string;
-    sameSite?: 'lax' | 'strict' | 'none';
-    httpOnly?: boolean;
-    secure?: boolean;
-    expires?: Date;
-  } = {};
-
-  for (const part of attributeParts) {
-    const trimmed = part.trim();
-    const [key, rawValue] = trimmed.split('=');
-    switch (key.toLowerCase()) {
-      case 'max-age':
-        options.maxAge = Number(rawValue);
-        break;
-      case 'path':
-        options.path = rawValue;
-        break;
-      case 'domain':
-        options.domain = rawValue;
-        break;
-      case 'samesite':
-        options.sameSite = rawValue.toLowerCase() as 'lax' | 'strict' | 'none';
-        break;
-      case 'httponly':
-        options.httpOnly = true;
-        break;
-      case 'secure':
-        options.secure = true;
-        break;
-      case 'expires':
-        options.expires = new Date(rawValue);
-        break;
-    }
-  }
-
-  store.set(name, value, options);
-}
-
-async function refresh(): Promise<boolean> {
-  const header = (await cookies()).toString();
-  const response = await fetch(`${EnvConfig.API_BASE}/auth/refresh`, {
-    method: 'POST',
-    cache: 'no-store',
-    headers: header ? { Cookie: header } : {},
-  });
-  if (!response.ok) return false;
-
+async function backendCookieHeader(): Promise<string | null> {
   const store = await cookies();
-  for (const setCookie of response.headers.getSetCookie()) {
-    applySetCookie(store, setCookie);
-  }
-  return true;
+  const forwardedAccess = (await headers()).get(ForwardedAccessTokenHeader);
+  const access = forwardedAccess ?? store.get(AccessTokenCookie)?.value;
+  const refresh = store.get(RefreshTokenCookie)?.value;
+
+  const pairs: string[] = [];
+  if (access) pairs.push(`${AccessTokenCookie}=${access}`);
+  if (refresh) pairs.push(`${RefreshTokenCookie}=${refresh}`);
+  return pairs.length > 0 ? pairs.join('; ') : null;
 }
 
-async function rawFetch(urlPath: string, { method, body }: ApiOptions): Promise<Response> {
-  const header = (await cookies()).toString();
-  const headers: Record<string, string> = {};
-  if (header) headers['Cookie'] = header;
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+export async function apiFetch(urlPath: string, { method, body }: ApiOptions = {}): Promise<Response> {
+  const requestHeaders: Record<string, string> = {};
+  const cookie = await backendCookieHeader();
+  if (cookie) requestHeaders['Cookie'] = cookie;
+  if (body !== undefined) requestHeaders['Content-Type'] = 'application/json';
 
   return fetch(`${EnvConfig.API_BASE}${urlPath}`, {
     method: method ?? 'GET',
-    headers,
+    headers: requestHeaders,
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
-}
-
-export async function apiFetch(
-  urlPath: string,
-  options: ApiOptions = {},
-  { retryOnUnauthorized = true }: ApiFetchOptions = {},
-): Promise<Response> {
-  let response = await rawFetch(urlPath, options);
-  if (
-    retryOnUnauthorized &&
-    response.status === 401 &&
-    !urlPath.startsWith('/auth/refresh')
-  ) {
-    const refreshed = await refresh();
-    if (refreshed) response = await rawFetch(urlPath, options);
-  }
-  return response;
 }
