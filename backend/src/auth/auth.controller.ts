@@ -43,11 +43,9 @@ export class AuthController {
     const refreshToken: unknown = (
       res.req.cookies as { [RefreshTokenCookie]: any }
     )[RefreshTokenCookie];
-    console.log('Ref', refreshToken);
     if (typeof refreshToken === 'string') {
       const accessToken =
         await this.authService.createAccessToken(refreshToken);
-      console.log(accessToken);
       if (accessToken === null) return res.status(401).send('Unauthorized');
       setCookies({
         res,

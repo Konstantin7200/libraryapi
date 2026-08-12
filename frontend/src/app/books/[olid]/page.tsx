@@ -5,10 +5,12 @@ import st from './page.module.scss';
 import { getBook } from '@/lib/books';
 import { createComment, getCommentByOlid } from '@/lib/comments';
 import { Comment } from '@/components/comment/comment';
-import { Button, TextField } from '@mui/material';
+import { Button, MenuItem, Select, TextField } from '@mui/material';
 import { refresh } from 'next/cache';
 import { isLoggedIn } from '@/lib/auth';
 import { Like } from '@/components/like/like';
+import { bookListItemType, bookListOptions } from '@/types/BookListTypes';
+import { addToBookList } from '@/lib/bookList';
 
 interface PageProps {
   params: Promise<{ olid: string }>;
@@ -26,6 +28,11 @@ const Page: FC<PageProps> = async ({ params }) => {
       await createComment(olid, text);
       refresh();
     }
+  }
+  async function addToBookListAction(formData:FormData) {
+    'use server';
+    const selectedOption=formData.get('booklist') as bookListItemType
+    await addToBookList(olid,selectedOption)
   }
 
   return (
@@ -50,6 +57,12 @@ const Page: FC<PageProps> = async ({ params }) => {
             <p>{book.likes} {book.likes===1?"Like":"Likes"}</p>
             <Like position='relative' liked={book.liked} olid={olid}/>
           </div>
+          <form className={st.BookListWrapper} action={addToBookListAction}>
+            <Select fullWidth name='booklist' defaultValue={bookListOptions[0]}>
+              {bookListOptions.map((v)=><MenuItem key={v} value={v}>{v}</MenuItem>)}
+            </Select>
+            <Button variant='outlined' type='Submit'>Add to booklist</Button>
+          </form>
         </div>
       </div>
       <h2>Description</h2>

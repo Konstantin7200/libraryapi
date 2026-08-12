@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { Comment } from './entities/commentEntity';
 import { commentDto } from '../comments/dto/comment.dto';
-import { User } from './entities/userEntity';
 
 @Injectable()
 export class CommentRepository {
@@ -15,16 +14,16 @@ export class CommentRepository {
     const result = await this.repo.findBy({ bookOlid: bookOlid });
     return result;
   }
-  async findByUser(user: User) {
-    const result = await this.repo.findBy({ user: user });
+  async findByUser(userId: number) {
+    const result = await this.repo.findBy({ user: { id: userId } });
     return result;
   }
-  async createOne(comment: commentDto, user: User) {
+  async createOne(comment: commentDto, userId: number) {
     const commentToSave: DeepPartial<Comment> = {
       id: 1,
       text: comment.text,
       bookOlid: comment.bookOlid,
-      user: user,
+      user: { id: userId },
     };
     const result = await this.repo.save(commentToSave);
     return result;

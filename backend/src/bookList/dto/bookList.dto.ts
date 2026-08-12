@@ -6,4 +6,10 @@ type BookListItemDto = {
   bookOlid: string;
 };
 type BookListStatus = 'Want to read' | 'Currently reading' | 'Already read';
-export type { BookListItem, BookListItemDto, BookListStatus };
+type BookListStatusWithAll = BookListStatus | 'All';
+export type {
+  BookListItem,
+  BookListItemDto,
+  BookListStatus,
+  BookListStatusWithAll,
+};

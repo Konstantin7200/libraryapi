@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { BookListService } from './book-list.service';
 import { UserId } from '../auth/userId.decorator';
-import type { BookListItemDto, BookListStatus } from './dto/bookList.dto';
+import type {
+  BookListItemDto,
+  BookListStatusWithAll,
+} from './dto/bookList.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('book-list')
@@ -9,8 +12,12 @@ export class BookListController {
   constructor(private readonly bookListService: BookListService) {}
   @UseGuards(AuthGuard)
   @Get()
-  async getBookList(@UserId() userId: number, @Query() type?: BookListStatus) {
-    await this.bookListService.getBookList(userId, type);
+  async getBookList(
+    @UserId() userId: number,
+    @Query('type') type: BookListStatusWithAll,
+  ) {
+    const result = await this.bookListService.getBookList(userId, type);
+    return result;
   }
   @UseGuards(AuthGuard)
   @Post()

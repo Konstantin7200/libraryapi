@@ -40,13 +40,6 @@ export class LikesService {
     const books: bookDto[] = [];
     for (let i = 0; i < likes.length; i++) {
       const like = likes[i];
-      const redisBook = await this.redisCache.getBook(like.bookOlid);
-      if (redisBook !== null) {
-        const { expirationDate, ...book } = redisBook;
-        book.liked = true;
-        books.push(book);
-        continue;
-      }
       const book = await this.bookService.findOne(like.bookOlid);
       book.liked = true;
       books.push(book);

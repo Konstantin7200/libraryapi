@@ -15,7 +15,7 @@ const page = () => {
           </CardContent>
           <CardActions>
             <Button variant="text">
-              <Link href={'/profile/lists'}>View my reading lists</Link>
+              <Link href={'/profile/lists?type=All'}>View my reading lists</Link>
             </Button>
           </CardActions>
         </Card>

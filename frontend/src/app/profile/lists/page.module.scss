@@ -4,3 +4,9 @@
     @include mixins.page();
     justify-content: space-between;
 }
+.BookListWrapper{
+    display: flex;
+    flex-direction: row;
+    gap:1rem;
+    width: 80%;
+}

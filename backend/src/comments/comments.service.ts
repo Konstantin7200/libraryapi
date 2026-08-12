@@ -10,9 +10,7 @@ export class CommentsService {
     private readonly commentRepository: CommentRepository,
   ) {}
   async getCommentsByUser(userId: number) {
-    const user = await this.userRepository.findOneById(userId);
-    if (user === null) throw Error('User is null');
-    const comments = await this.commentRepository.findByUser(user);
+    const comments = await this.commentRepository.findByUser(userId);
     return comments;
   }
   async getCommentsByBook(bookOlid: string) {
@@ -20,9 +18,7 @@ export class CommentsService {
     return comments;
   }
   async createComment(comment: commentDto, userId: number) {
-    const user = await this.userRepository.findOneById(userId);
-    if (user === null) throw Error('User is null');
-    const created = await this.commentRepository.createOne(comment, user);
+    const created = await this.commentRepository.createOne(comment, userId);
     return created;
   }
 }
