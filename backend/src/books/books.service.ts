@@ -4,6 +4,7 @@ import { bookDto, extendedBookDto } from './dto/bookDto';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
 import { mapToBookList } from '../utils/mapToBookList';
+import { RedisCashe } from '../cashe/redisCashe';
 
 @Injectable()
 export class BooksService {
@@ -11,6 +12,7 @@ export class BooksService {
     private readonly bookApi: BookApi,
     private readonly userRepository: UserRepository,
     private readonly likeRepository: LikeRepository,
+    private readonly redisCashe: RedisCashe,
   ) {}
   async findOneDetailed(olid: string, userId?: number | null) {
     const apiBook = await this.bookApi.getBook(olid);
@@ -35,7 +37,9 @@ export class BooksService {
     };
     return book;
   }
-  async findOne(olid: string) {
+  async findOne(olid: string): Promise<bookDto> {
+    const redisBook = await this.redisCashe.getBook(olid);
+    if (redisBook !== null) return redisBook;
     const apiBook = await this.bookApi.getBook(olid);
     const authorsName = await this.bookApi.getAuthor(
       apiBook.authors[0].author.key.substring('/authors/'.length),
@@ -47,6 +51,7 @@ export class BooksService {
       liked: false,
       olid: olid,
     };
+    await this.redisCashe.setBook(olid, book);
     return book;
   }
   async findMany(

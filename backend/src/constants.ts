@@ -4,6 +4,7 @@ const RefreshTokenCookie = 'libraryApiRefreshToken' as const;
 const RefreshTokenMaxAge = 7 * 24 * 60 * 60;
 const BooksApiPageSize = 10;
 const MemoryCacheTtl = 60 * 30;
+const RedisTtl = 60 * 60 * 12;
 
 export {
   AccessTokenCookie,
@@ -12,4 +13,5 @@ export {
   RefreshTokenMaxAge,
   BooksApiPageSize,
   MemoryCacheTtl,
+  RedisTtl,
 };

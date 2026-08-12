@@ -1,6 +1,7 @@
 import { Redis } from 'ioredis';
 import { bookDto } from '../books/dto/bookDto';
 import { Injectable } from '@nestjs/common';
+import { RedisTtl } from '../constants';
 
 type RedisBook = bookDto & {
   expirationDate: Date;
@@ -23,16 +24,21 @@ export class RedisCashe {
   async setBook(olid: string, book: bookDto) {
     const redisBook: RedisBook = {
       ...book,
-      expirationDate: new Date(),
+      expirationDate: new Date(Date.now() + RedisTtl * 1000),
     };
     await this.redis.set(olid, JSON.stringify(redisBook));
   }
-  async getBook(olid: string) {
+  async getBook(olid: string): Promise<bookDto | null> {
     const str = await this.redis.get(olid);
     if (str === null) return null;
     const raw: unknown = JSON.parse(str);
     if (unknownIsRedisBook(raw)) {
-      return raw;
+      if (raw.expirationDate < new Date()) {
+        await this.redis.del(olid);
+        return null;
+      }
+      const { expirationDate, ...book } = raw;
+      return book;
     }
     return null;
   }
