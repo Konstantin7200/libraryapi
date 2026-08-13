@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CommentsModule } from './comments/comments.module';
 import { BookListModule } from './bookList/book-list.module';
 import { LikesModule } from './likes/likes.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LikesModule } from './likes/likes.module';
     CommentsModule,
     BookListModule,
     LikesModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

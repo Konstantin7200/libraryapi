@@ -13,6 +13,14 @@ export class UserRepository {
     const result = await this.repo.findOneBy({ login: login });
     return result;
   }
+  async findOneById(userId: number) {
+    const result = await this.repo.findOneBy({ id: userId });
+    return result;
+  }
+  async updateOne(user: DeepPartial<User>) {
+    const result = await this.repo.update({ id: user.id }, user);
+    return result;
+  }
   async createOne(login: string, hashedPassword: string) {
     const user: DeepPartial<User> = {
       login: login,

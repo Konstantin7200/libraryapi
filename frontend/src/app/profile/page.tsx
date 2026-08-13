@@ -1,11 +1,34 @@
-import { Button, Card, CardActions, CardContent, Divider } from '@mui/material';
+import { Button, Card, CardActions, CardContent } from '@mui/material';
 import st from './page.module.scss';
 import Link from 'next/link';
+import { SearchParams } from 'next/dist/server/request/search-params';
+import { getLogin } from '@/lib/user';
+import { LoginChangeForm } from './loginChangeForm';
+import { PasswordChangeForm } from './passwordChangeForm';
 
-const page = () => {
+interface PageProps {
+  searchParams: Promise<SearchParams>;
+}
+const page = async ({ searchParams }: PageProps) => {
+  const { action } = await searchParams;
+  const currentLogin = await getLogin();
   return (
     <div className={st.page}>
-      <h1>Profile</h1>
+      <h1>Hello, {currentLogin}</h1>
+      {action === 'change-login' && (
+        <Card>
+          <CardContent>
+            <LoginChangeForm initialLogin={currentLogin} />
+          </CardContent>
+        </Card>
+      )}
+      {action === 'change-password' && (
+        <Card>
+          <CardContent>
+            <PasswordChangeForm />
+          </CardContent>
+        </Card>
+      )}
       <h2>My saved</h2>
       <div>
         <Card>
@@ -41,7 +64,7 @@ const page = () => {
           </CardContent>
           <CardActions>
             <Button variant="text">
-              <Link href={'/profile/login'}>Change login</Link>
+              <Link href={'/profile?action=change-login'}>Change login</Link>
             </Button>
           </CardActions>
         </Card>
@@ -55,7 +78,9 @@ const page = () => {
           </CardContent>
           <CardActions>
             <Button variant="text">
-              <Link href={'/profile/password'}>Change password</Link>
+              <Link href={'/profile?action=change-password'}>
+                Change password
+              </Link>
             </Button>
           </CardActions>
         </Card>
