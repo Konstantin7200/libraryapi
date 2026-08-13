@@ -1,8 +1,20 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { UserId } from '../auth/userId.decorator';
-import type { commentDto } from './dto/comment.dto';
+import type { createCommentDto } from './dto/createComment.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import type { CommentUpdateDto } from './dto/commentUpdate.dto';
+import { AttachUserIdGuard } from '../auth/attachUserId.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -10,7 +22,7 @@ export class CommentsController {
   @UseGuards(AuthGuard)
   @Post()
   async addComment(
-    @Body() comment: commentDto,
+    @Body() comment: createCommentDto,
     @UserId() userId: number | null,
   ) {
     if (userId === null) throw Error('Null id from the token');
@@ -23,7 +35,19 @@ export class CommentsController {
     return this.commentsService.getCommentsByUser(userId);
   }
   @Get()
-  async getCommentsByBook(@Query('olid') bookOlid: string) {
-    return this.commentsService.getCommentsByBook(bookOlid);
+  @UseGuards(AttachUserIdGuard)
+  async getCommentsByBook(
+    @Query('olid') bookOlid: string,
+    @UserId() userId: number | null,
+  ) {
+    return this.commentsService.getCommentsByBook(bookOlid, userId);
+  }
+  @Put()
+  async updateComment(@Body() comment: CommentUpdateDto) {
+    await this.commentsService.updateComment(comment.text, comment.id);
+  }
+  @Delete('/:id')
+  async deleteComment(@Param('id') id: number) {
+    await this.commentsService.deleteComment(id);
   }
 }

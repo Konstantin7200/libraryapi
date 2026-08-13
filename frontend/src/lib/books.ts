@@ -25,3 +25,15 @@ export async function getBook(olid: string): Promise<ExtendedBookType> {
   const response = await apiFetch(`/books/${olid}`);
   return (await response.json()) as ExtendedBookType;
 }
+export async function getFakeBook(olid:string):Promise<ExtendedBookType>{
+  const fakeBook:ExtendedBookType={
+    olid:olid,
+    coversUrl:"https://covers.openlibrary.org/b/isbn/9780385533225-L.jpg",
+    title:"Harry potter",
+    authors:["Some dudes"],
+    liked:false,
+    likes:12,
+    description:"super puper book"
+  }
+  return fakeBook;
+}

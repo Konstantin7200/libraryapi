@@ -9,13 +9,47 @@
 }
 
 .text {
-    font-size: 1rem;
+    font-size: 1.25em;
     line-height: 1.5;
     color: #222;
 }
 
 .date {
     font-family: var(--font-geist-mono);
-    font-size: 0.75rem;
+    font-size: 0.8em;
     color: #888;
+}
+
+.login {
+    font-weight: 600;
+    color: #333;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 2em;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.editField {
+    width: 100%;
+    min-height: 5rem;
+    padding: 0.5rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1em;
+    resize: vertical;
+}
+.RowCont{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }

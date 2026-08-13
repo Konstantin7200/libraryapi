@@ -1,6 +1,8 @@
 type commentDto = {
-  bookOlid: string;
+  id: number;
+  login: string;
   text: string;
-  userId: number;
+  mine: boolean;
+  updatedAt: string;
 };
 export type { commentDto };
