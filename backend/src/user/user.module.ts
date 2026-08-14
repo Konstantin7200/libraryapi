@@ -8,5 +8,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [DatabaseModule, AuthModule],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}

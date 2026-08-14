@@ -8,6 +8,7 @@ import { CommentsModule } from './comments/comments.module';
 import { BookListModule } from './bookList/book-list.module';
 import { LikesModule } from './likes/likes.module';
 import { UserModule } from './user/user.module';
+import { MixedListModule } from './mixed-list/mixed-list.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
     BookListModule,
     LikesModule,
     UserModule,
+    MixedListModule,
   ],
   controllers: [AppController],
   providers: [AppService],

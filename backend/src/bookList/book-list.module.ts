@@ -5,7 +5,6 @@ import { DatabaseModule } from '../db/db.module';
 import { AuthModule } from '../auth/auth.module';
 import { BooksModule } from '../books/books.module';
 import { BookApiModule } from '../api/bookApi.module';
-import { BooksService } from '../books/books.service';
 import { CasheModule } from '../cashe/cashe.module';
 
 @Module({
@@ -17,6 +16,7 @@ import { CasheModule } from '../cashe/cashe.module';
     CasheModule,
   ],
   controllers: [BookListController],
-  providers: [BookListService, BooksService],
+  providers: [BookListService],
+  exports: [BookListService],
 })
 export class BookListModule {}

@@ -10,5 +10,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [CasheModule, BookApiModule, DatabaseModule, AuthModule],
   controllers: [BooksController],
   providers: [BooksService],
+  exports: [BooksService],
 })
 export class BooksModule {}

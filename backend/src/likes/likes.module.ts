@@ -6,7 +6,6 @@ import { AuthModule } from '../auth/auth.module';
 import { CasheModule } from '../cashe/cashe.module';
 import { BookApiModule } from '../api/bookApi.module';
 import { BooksModule } from '../books/books.module';
-import { BooksService } from '../books/books.service';
 
 @Module({
   imports: [
@@ -17,6 +16,7 @@ import { BooksService } from '../books/books.service';
     BooksModule,
   ],
   controllers: [LikesController],
-  providers: [LikesService, BooksService],
+  providers: [LikesService],
+  exports: [LikesService],
 })
 export class LikesModule {}

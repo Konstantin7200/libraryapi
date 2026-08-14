@@ -1,0 +1,13 @@
+@use "../../../mixins.scss";
+
+.page{
+    @include mixins.page();
+    gap:2rem;
+}
+.filters{
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
