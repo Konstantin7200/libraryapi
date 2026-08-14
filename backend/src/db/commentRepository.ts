@@ -25,7 +25,10 @@ export class CommentRepository {
     return result;
   }
   async findById(commentId: number) {
-    const result = await this.repo.findOneBy({ id: commentId });
+    const result = await this.repo.find({
+      where: { id: commentId },
+      relations: { user: true },
+    });
     return result;
   }
   async createOne(comment: createCommentDto, userId: number) {

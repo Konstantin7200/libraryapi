@@ -29,30 +29,34 @@ export class CommentsService {
     const created = await this.commentRepository.createOne(comment, userId);
     return created;
   }
-  async updateComment(commentText: string, commentId: number) {
+  async updateComment(commentText: string, commentId: number, userId: number) {
+    const comments = await this.commentRepository.findById(commentId);
+    const comment = comments[0];
+    if (comment === null) throw Error('Comment not found');
+    if (comment.user.id !== userId) throw Error('Access denied');
     const result = await this.commentRepository.updateOne(
       commentText,
       commentId,
     );
     return result;
   }
-  async deleteComment(id: number) {
-    const comment = await this.commentRepository.findById(id);
+  async deleteComment(id: number, userId: number) {
+    const comments = await this.commentRepository.findById(id);
+    const comment = comments[0];
     if (comment === null) throw Error('Comment not found');
+    if (comment.user.id !== userId) throw Error('Access denied');
     const result = await this.commentRepository.deleteOne(comment);
     return result;
   }
-  private async dbCommentsToComments(
+  private dbCommentsToComments(
     dbComments: Comment[],
     userId: number | null,
     optionalLogin?: string,
-  ): Promise<commentDto[]> {
+  ): commentDto[] {
     const comments: commentDto[] = [];
     for (let i = 0; i < dbComments.length; i++) {
       const comment = dbComments[i];
-      const login = optionalLogin
-        ? optionalLogin
-        : comment.user.login
+      const login = optionalLogin ? optionalLogin : comment.user.login;
       comments.push({
         id: comment.id,
         updatedAt: comment.updatedAt,

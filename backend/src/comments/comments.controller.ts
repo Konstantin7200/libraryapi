@@ -43,11 +43,16 @@ export class CommentsController {
     return this.commentsService.getCommentsByBook(bookOlid, userId);
   }
   @Put()
-  async updateComment(@Body() comment: CommentUpdateDto) {
-    await this.commentsService.updateComment(comment.text, comment.id);
+  @UseGuards(AuthGuard)
+  async updateComment(
+    @Body() comment: CommentUpdateDto,
+    @UserId() userId: number,
+  ) {
+    await this.commentsService.updateComment(comment.text, comment.id, userId);
   }
   @Delete('/:id')
-  async deleteComment(@Param('id') id: number) {
-    await this.commentsService.deleteComment(id);
+  @UseGuards(AuthGuard)
+  async deleteComment(@Param('id') id: number, @UserId() userId: number) {
+    await this.commentsService.deleteComment(id, userId);
   }
 }
