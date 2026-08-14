@@ -43,19 +43,21 @@ export const Comment: FC<CommentType> = ({ text, updatedAt, login, id, mine }) =
         </>
       )}
       <div className={st.RowCont}>
-      <p className={st.date}>{date}</p>
-      {mine && !editing && (
-        <div className={st.actions}>
-          <Button size="small" onClick={() => setEditing(true)}>
-            Edit
-          </Button>
-          <form action={deleteComment.bind(null, id)}>
-            <Button type="submit" size="small" color="error">
+        <p className={st.date}>{date}</p>
+        {mine && !editing && (
+          <div className={st.actions}>
+            <Button size="small" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => deleteComment(id)}
+            >
               Delete
             </Button>
-          </form>
-        </div>
-      )}
+          </div>
+        )}
       </div>
     </div>
   );
