@@ -9,6 +9,7 @@ import {
   parseSetCookie,
 } from './cookie';
 import type { ParsedCookie } from './cookie';
+import { redirect } from 'next/navigation';
 
 export type CookieStore = Awaited<ReturnType<typeof cookies>>;
 
@@ -40,9 +41,12 @@ export async function apiFetch(urlPath: string, { method, body }: ApiOptions = {
   if (cookie) requestHeaders['Cookie'] = cookie;
   if (body !== undefined) requestHeaders['Content-Type'] = 'application/json';
 
-  return fetch(`${EnvConfig.API_BASE}${urlPath}`, {
+  const response=await fetch(`${EnvConfig.API_BASE}${urlPath}`, {
     method: method ?? 'GET',
     headers: requestHeaders,
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
+  if(response.status===403)
+    return redirect('/login');
+  return response;
 }

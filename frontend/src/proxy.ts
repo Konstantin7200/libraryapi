@@ -9,18 +9,20 @@ import {
 } from '@/lib/cookie';
 
 export async function proxy(request: NextRequest) {
-  if (!request.cookies.has(RefreshTokenCookie)) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (request.cookies.has(AccessTokenCookie)) {
+    return NextResponse.next();
   }
 
   const refreshToken = request.cookies.get(RefreshTokenCookie)?.value;
+  if(refreshToken===undefined)
+    return NextResponse.next();
   const refreshResponse = await fetch(`${EnvConfig.API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: { Cookie: `${RefreshTokenCookie}=${refreshToken}` },
   });
 
   if (!refreshResponse.ok) {
-    const nextResponse = NextResponse.redirect(new URL('/login', request.url));
+    const nextResponse = NextResponse.next()
     nextResponse.cookies.delete(AccessTokenCookie);
     nextResponse.cookies.delete(RefreshTokenCookie);
     return nextResponse;
@@ -50,5 +52,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/profile/:path*',
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };
