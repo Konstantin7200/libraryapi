@@ -2,22 +2,10 @@
 import { FC, FormEvent, useState, useTransition } from 'react';
 import { Button } from '@mui/material';
 import { CommentType } from '@/types/CommentType';
+import { deleteComment, updateComment } from './actions';
 import st from './comment.module.scss';
 
-interface CommentProps extends CommentType {
-  updateAction: (formData: FormData) => void;
-  deleteAction: (formData: FormData) => void;
-}
-
-export const Comment: FC<CommentProps> = ({
-  text,
-  updatedAt,
-  login,
-  id,
-  mine,
-  updateAction,
-  deleteAction,
-}) => {
+export const Comment: FC<CommentType> = ({ text, updatedAt, login, id, mine }) => {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -25,18 +13,17 @@ export const Comment: FC<CommentProps> = ({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      await updateAction(formData);
+      await updateComment(id, formData);
       setEditing(false);
     });
   };
 
-  const date =new Date(updatedAt).toUTCString();
+  const date = new Date(updatedAt).toUTCString();
 
   return (
     <div className={st.comment}>
       {editing ? (
         <form onSubmit={handleSave} className={st.form}>
-          <input type="hidden" name="id" value={id} />
           <textarea name="text" defaultValue={text} required className={st.editField} />
           <div className={st.actions}>
             <Button type="submit" size="small" variant="contained" disabled={isPending}>
@@ -57,14 +44,13 @@ export const Comment: FC<CommentProps> = ({
       )}
       <div className={st.RowCont}>
       <p className={st.date}>{date}</p>
-      {mine && (
+      {mine && !editing && (
         <div className={st.actions}>
-          <Button onClick={() => setEditing(true)}>
+          <Button size="small" onClick={() => setEditing(true)}>
             Edit
           </Button>
-          <form action={deleteAction}>
-            <input type="hidden" name="id" value={id} />
-            <Button type="submit" color="error">
+          <form action={deleteComment.bind(null, id)}>
+            <Button type="submit" size="small" color="error">
               Delete
             </Button>
           </form>

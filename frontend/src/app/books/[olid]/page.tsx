@@ -3,12 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import st from './page.module.scss';
 import { getBook, getFakeBook } from '@/lib/books';
-import {
-  createComment,
-  deleteComment,
-  getCommentByOlid,
-  updateComment,
-} from '@/lib/comments';
+import { createComment, getCommentByOlid } from '@/lib/comments';
 import { Comment } from '@/components/comment/comment';
 import { Button, MenuItem, Select, TextField } from '@mui/material';
 import { refresh } from 'next/cache';
@@ -33,21 +28,6 @@ const Page: FC<PageProps> = async ({ params }) => {
       await createComment(olid, text);
       refresh();
     }
-  }
-  async function updateCommentAction(formData: FormData) {
-    'use server';
-    const id = Number(formData.get('id'));
-    const text = formData.get('text');
-    if (typeof text === 'string' && text.trim()) {
-      await updateComment(id, text);
-      refresh();
-    }
-  }
-  async function deleteCommentAction(formData: FormData) {
-    'use server';
-    const id = Number(formData.get('id'));
-    await deleteComment(id);
-    refresh();
   }
   async function addToBookListAction(formData:FormData) {
     'use server';
@@ -111,8 +91,6 @@ const Page: FC<PageProps> = async ({ params }) => {
             <Comment
               key={comment.id}
               {...comment}
-              updateAction={updateCommentAction}
-              deleteAction={deleteCommentAction}
             />
           ))}
       </div>
