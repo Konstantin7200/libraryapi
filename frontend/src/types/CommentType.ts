@@ -1,5 +1,6 @@
 type CommentType = {
   text: string;
+  bookOlid: string;
   updatedAt: string;
   login:string;
   mine:boolean;

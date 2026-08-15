@@ -59,6 +59,7 @@ export class CommentsService {
       const login = optionalLogin ? optionalLogin : comment.user.login;
       comments.push({
         id: comment.id,
+        bookOlid: comment.bookOlid,
         updatedAt: comment.updatedAt,
         text: comment.text,
         mine: comment.user.id === userId,

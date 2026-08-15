@@ -15,6 +15,11 @@ export async function updateComment(id: number, text: string) {
     },
   });
 }
+export async function getMyComments(){
+  const result=await apiFetch('/comments/mine')
+  const data= await result.json();
+  return data as CommentType[];
+}
 export async function deleteComment(id: number) {
   await apiFetch(`/comments/${id}`, { method: 'DELETE' });
 }

@@ -4,8 +4,9 @@ import { Button } from '@mui/material';
 import { CommentType } from '@/types/CommentType';
 import { deleteComment, updateComment } from './actions';
 import st from './comment.module.scss';
+import Link from 'next/link';
 
-export const Comment: FC<CommentType> = ({ text, updatedAt, login, id, mine }) => {
+export const Comment: FC<CommentType> = ({ text,bookOlid, updatedAt, login, id, mine }) => {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -35,12 +36,13 @@ export const Comment: FC<CommentType> = ({ text, updatedAt, login, id, mine }) =
           </div>
         </form>
       ) : (
-        <>
+        <div className={st.RowCont}>
           <p className={st.text}>
             <span className={st.login}>{login}: </span>
             {text}
           </p>
-        </>
+          <Link className={st.bookLink} href={`/books/${bookOlid}`}>{bookOlid}</Link>
+        </div>
       )}
       <div className={st.RowCont}>
         <p className={st.date}>{date}</p>

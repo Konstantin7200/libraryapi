@@ -1,0 +1,11 @@
+@use "../../../mixins.scss";
+
+.page{
+    @include mixins.page();
+    justify-content: space-between;
+}
+.comments{
+    display: flex;
+    flex-direction: column;
+    gap:1rem;
+}
