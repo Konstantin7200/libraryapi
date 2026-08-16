@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { BookListItem } from './entities/bookListItemEntity';
 import { BookListStatus } from '../bookList/dto/bookList.dto';
 
@@ -21,17 +21,19 @@ export class BookListRepository {
     const result = await this.repo.findBy({ user: { id: userId } });
     return result;
   }
-  async addBookToList(
+  async upsertBookToList(
     userId: number,
     bookOlid: string,
     status: BookListStatus,
   ) {
-    const bookListItem: DeepPartial<BookListItem> = {
-      bookOlid: bookOlid,
-      user: { id: userId },
-      status: status,
-    };
-    const result = await this.repo.save(bookListItem);
+    const result = await this.repo.upsert(
+      {
+        bookOlid: bookOlid,
+        userId: userId,
+        status: status,
+      },
+      ['userId', 'bookOlid'],
+    );
     return result;
   }
 }

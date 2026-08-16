@@ -32,7 +32,7 @@ export class BookListService {
     return books;
   }
   async addBookToList(userId: number, bookOlid: string, type: BookListStatus) {
-    const result = await this.bookListRepository.addBookToList(
+    const result = await this.bookListRepository.upsertBookToList(
       userId,
       bookOlid,
       type,

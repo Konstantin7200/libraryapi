@@ -17,7 +17,9 @@ export class BookListItem {
   status!: 'Want to read' | 'Currently reading' | 'Already read';
   @Column()
   bookOlid!: string;
+  @Column()
+  userId!: number;
   @ManyToOne(() => User, (user) => user.bookList)
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user!: User;
 }
