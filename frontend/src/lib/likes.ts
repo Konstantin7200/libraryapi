@@ -1,6 +1,5 @@
 'use server'
 
-import { refresh } from 'next/cache';
 import { apiFetch } from './apiWrapper';
 import { BookType } from '@/types/BookTypes';
 
@@ -9,7 +8,6 @@ export async function toggleLike(olid: string) {
     method: 'POST',
     body: { bookOlid: olid },
   });
-  refresh();
 }
 export async function getLikedBooks() {
   const result=await apiFetch('/likes'); 

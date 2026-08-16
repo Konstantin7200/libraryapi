@@ -11,6 +11,7 @@ import { isLoggedIn } from '@/lib/auth';
 import { Like } from '@/components/like/like';
 import { bookListItemType, bookListOptions } from '@/types/BookListTypes';
 import { addToBookList } from '@/lib/bookList';
+import { LikeCount } from './likeCount';
 
 interface PageProps {
   params: Promise<{ olid: string }>;
@@ -18,7 +19,7 @@ interface PageProps {
 const Page: FC<PageProps> = async ({ params }) => {
   const loggedIn = await isLoggedIn();
   const olid = (await params).olid;
-  const book = await getBook(olid);
+  const book = await getFakeBook(olid);
   const comments = await getCommentByOlid(olid);
 
   async function createCommentAction(formData: FormData) {
@@ -54,7 +55,7 @@ const Page: FC<PageProps> = async ({ params }) => {
           <h1 className={st.title}>{book.title}</h1>
           <p className={st.author}>{book.authors.join(' ,')}</p>
           <div className={st.LikeWrapper}>
-            <p>{book.likes} {book.likes===1?"Like":"Likes"}</p>
+            <LikeCount initialLikes={book.likes} olid={olid}/>
             <Like position='relative' liked={book.liked} olid={olid}/>
           </div>
           <form className={st.BookListWrapper} action={addToBookListAction}>

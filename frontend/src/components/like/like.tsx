@@ -1,7 +1,7 @@
 'use client';
 import { Favorite } from "@mui/icons-material"
 import st from "./like.module.scss"
-import { FC } from "react"
+import { FC, useState, useTransition } from "react"
 import { toggleLike } from "@/lib/likes"
 
 interface LikeProps{
@@ -10,11 +10,14 @@ interface LikeProps{
     position?:'relative'
 }
 export const Like:FC<LikeProps> = ({liked,olid,position}) => {
-    const iconStyle = { width: "80px", height: "80px", color: liked ? 'red' : 'rgb(122, 123, 124)' }
+    const [isLiked, setIsLiked] = useState(liked);
+    const [, startTransition] = useTransition();
+    const iconStyle = { width: "80px", height: "80px", color: isLiked ? 'red' : 'rgb(122, 123, 124)' }
     const handleLikeClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        toggleLike(olid);
+        setIsLiked((prev) => !prev);
+        startTransition(() => toggleLike(olid));
     };
     return (
         <div className={position==='relative'?st.RelativeIconWrapper:st.IconWrapper} onClick={handleLikeClick}>

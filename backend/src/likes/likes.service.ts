@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Subject } from 'rxjs';
+import { Injectable, Logger } from '@nestjs/common';
+import { Redis } from 'ioredis';
+import { map, merge, Observable, timer } from 'rxjs';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
 import { bookDto } from '../books/dto/bookDto';
-import { RedisCashe } from '../cashe/redisCashe';
 import { BookApi } from '../api/bookApi';
 import { BooksService } from '../books/books.service';
 
@@ -11,17 +11,23 @@ export type LikeEventType = {
   bookOlid: string;
   likes: number;
 };
+
+const LIKES_CHANNEL = 'likes';
+
 @Injectable()
 export class LikesService {
+  private readonly logger = new Logger(LikesService.name);
+  private readonly likesSubscriber: Redis;
   constructor(
     private readonly userRepository: UserRepository,
     private readonly likeRepository: LikeRepository,
-    private readonly redisCache: RedisCashe,
     private readonly bookApi: BookApi,
     private readonly bookService: BooksService,
-  ) {}
-  private likeEvents = new Subject<LikeEventType>();
-  readonly likes = this.likeEvents.asObservable();
+    private readonly redis: Redis,
+  ) {
+    this.likesSubscriber = this.redis.duplicate();
+    this.likesSubscriber.subscribe(LIKES_CHANNEL);
+  }
   async toggleLike(bookOlid: string, userId: number) {
     const likeFound = await this.likeRepository.getLike(bookOlid, userId);
     if (likeFound === null) {
@@ -33,7 +39,29 @@ export class LikesService {
   }
   async likesChanged(bookOlid: string) {
     const likes = await this.likeRepository.getLikesByBook(bookOlid);
-    this.likeEvents.next({ bookOlid: bookOlid, likes: likes });
+    const payload = JSON.stringify({ bookOlid: bookOlid, likes: likes });
+    try {
+      await this.redis.publish(LIKES_CHANNEL, payload);
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+  likesSse(olid: string): Observable<MessageEvent> {
+    const likes$ = new Observable<MessageEvent>((subscriber) => {
+      const onMessage = (channel: string, message: string) => {
+        if (channel !== LIKES_CHANNEL) return;
+        const payload = JSON.parse(message) as LikeEventType;
+        if (payload.bookOlid === olid) {
+          subscriber.next({ data: payload } as MessageEvent);
+        }
+      };
+      this.likesSubscriber.on('message', onMessage);
+      return () => this.likesSubscriber.off('message', onMessage);
+    });
+    const heartbeat$ = timer(0, 20000).pipe(
+      map(() => ({ comment: 'ping' }) as unknown as MessageEvent),
+    );
+    return merge(likes$, heartbeat$);
   }
   async getLikedBooksByUser(userId: number): Promise<bookDto[]> {
     const likes = await this.likeRepository.getLikesByUser(userId);

@@ -23,6 +23,9 @@ async function createApp(): Promise<NestExpressApplication> {
       .map((origin) => origin.trim()),
     credentials: true,
   });
+  const server = app.getHttpServer();
+  server.headersTimeout = 0;
+  server.requestTimeout = 0;
   await app.init();
   cachedApp = app;
   return app;

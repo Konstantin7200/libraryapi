@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Sse, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Sse,
+  UseGuards,
+} from '@nestjs/common';
 import { LikesService } from './likes.service';
 import type { LikeDto } from './dto/like.dto';
 import { UserId } from '../auth/userId.decorator';
@@ -20,8 +28,8 @@ export class LikesController {
     const result = await this.likesService.getLikedBooksByUser(userId);
     return result;
   }
-  @Sse('manual')
-  sendLikes() {
-    return this.likesService.likes;
+  @Sse('sse/:olid')
+  sendLikes(@Param('olid') olid: string) {
+    return this.likesService.likesSse(olid);
   }
 }
