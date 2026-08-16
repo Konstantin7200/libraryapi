@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../db/userRepository';
 import { hashFunction } from '../utils/hashFunction';
+import { DeepPartial } from 'typeorm';
+import { User } from '../db/entities/userEntity';
 
 @Injectable()
 export class UserService {
@@ -8,7 +10,7 @@ export class UserService {
   async getLogin(userId: number) {
     const user = await this.userRepository.findOneById(userId);
     if (!user) throw Error('User not found');
-    return user?.login;
+    return user.login;
   }
   async changePassword(
     userId: number,
@@ -19,15 +21,17 @@ export class UserService {
     if (!user) throw Error('User not found');
     if (user.hashedPassword != hashFunction(currentPassword))
       throw Error('Passwords dont match');
-    const updateUser = { id: userId, password: newPassword };
+    const updateUser: DeepPartial<User> = {
+      id: userId,
+      hashedPassword: hashFunction(newPassword),
+    };
     const result = await this.userRepository.updateOne(updateUser);
   }
   async changeLogin(userId: number, newLogin: string) {
-    const user = await this.userRepository.findOneById(userId);
-    if (!user) throw Error('User not found');
-    if (newLogin === user.login) return;
-    const userWithNewLogin = this.userRepository.findOne(newLogin);
-    if (userWithNewLogin !== null)
+    const login = await this.getLogin(userId);
+    if (newLogin === login) return;
+    const userWithNewLogin = await this.userRepository.findOne(newLogin);
+    if (userWithNewLogin !== null && userWithNewLogin.id !== userId)
       throw Error('User with this login already exists');
     const updateUser = { id: userId, login: newLogin };
     const result = await this.userRepository.updateOne(updateUser);
