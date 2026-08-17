@@ -4,8 +4,7 @@ import { apiFetch } from './apiWrapper';
 type SearchParam = string | string[] | undefined;
 
 interface GetBooksParams {
-  title?: SearchParam;
-  author?: SearchParam;
+  q?: SearchParam;
   page?: SearchParam;
 }
 
@@ -13,8 +12,7 @@ export async function getBooks(
   params: GetBooksParams = {},
 ): Promise<BookType[]> {
   const query = new URLSearchParams();
-  if (params.title) query.set('title', String(params.title));
-  if (params.author) query.set('author', String(params.author));
+  if (params.q) query.set('title', String(params.q));
   if (params.page) query.set('page', String(params.page));
 
   const response = await apiFetch(`/books?${query.toString()}`);

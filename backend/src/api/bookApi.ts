@@ -14,9 +14,9 @@ export class BookApi {
     private memoryCashe: MemoryCashe,
   ) {}
 
-  async searchBooks(page: number, title?: string, author?: string) {
-    return this.getOrRun(`search|${page}|${title || ''}|${author || ''}`, () =>
-      this._searchBooks(page, title, author),
+  async searchBooks(page: number, q?: string) {
+    return this.getOrRun(`search|${page}|${q || ''}|`, () =>
+      this._searchBooks(page, q),
     );
   }
 
@@ -56,10 +56,9 @@ export class BookApi {
     return promise;
   }
 
-  private async _searchBooks(page: number, title?: string, author?: string) {
+  private async _searchBooks(page: number, q?: string) {
     const params = new URLSearchParams();
-    addParamIfNotEmpty(params, 'title', title);
-    addParamIfNotEmpty(params, 'author', author);
+    addParamIfNotEmpty(params, 'q', q?.toString());
     addParamIfNotEmpty(params, 'page', page.toString());
     addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
     const response = await fetch(

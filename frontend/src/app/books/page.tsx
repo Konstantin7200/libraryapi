@@ -11,18 +11,18 @@ interface pageProps {
   searchParams: Promise<SearchParams>;
 }
 const page: FC<pageProps> = async ({ searchParams }) => {
-  const { title, author, page } = await searchParams;
-  const data = title || author ? await getBooks({ title, author, page }) : [];
+  const { q, page } = await searchParams;
+  const data = q ? await getBooks({ q, page }) : [];
   const handleChange = async (page: number) => {
     'use server';
     redirect(
-      `/books?${title ? `title=${title}&` : ''}${author ? `author=${author}&` : ''}${page ? `page=${page}` : ''}`,
+      `/books?${q ? `title=${q}&` : ''}${page ? `page=${page}` : ''}`,
     );
   };
-  const handleSearch = async (title: string, author: string) => {
+  const handleSearch = async (q:string) => {
     'use server';
     redirect(
-      `/books?${title ? `title=${title}&` : ''}${author ? `author=${author}&` : ''}page=1`,
+      `/books?${q ? `title=${q}&` : ''}page=1`,
     );
   };
   return (

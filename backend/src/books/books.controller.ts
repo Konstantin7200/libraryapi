@@ -10,16 +10,10 @@ export class BooksController {
   @Get('/')
   async findMany(
     @Query('page') page: number,
-    @Query('title') title?: string,
-    @Query('author') author?: string,
+    @Query('q') q?: string,
     @UserId() userId?: number | null,
   ) {
-    const response = await this.booksService.findMany(
-      page,
-      title,
-      author,
-      userId,
-    );
+    const response = await this.booksService.findMany(page, q, userId);
     return response;
   }
   @UseGuards(AttachUserIdGuard)

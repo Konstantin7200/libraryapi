@@ -56,11 +56,10 @@ export class BooksService {
   }
   async findMany(
     page: number,
-    title?: string,
-    author?: string,
+    q?: string,
     userId?: number | null,
   ): Promise<bookDto[]> {
-    const data = await this.bookApi.searchBooks(page, title, author);
+    const data = await this.bookApi.searchBooks(page, q);
     const books = mapToBookList(data.docs);
     if (userId == null) return books;
     const likedOlids = await this.likeRepository.getLikedOlids(
