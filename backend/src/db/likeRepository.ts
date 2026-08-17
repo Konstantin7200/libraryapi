@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, In, Repository } from 'typeorm';
 import { Like } from './entities/likeEntity';
+import { PaginationOptions } from '../pagination/paginated.dto';
 
 @Injectable()
 export class LikeRepository {
@@ -29,7 +30,7 @@ export class LikeRepository {
     return result;
   }
   async getLikesByBook(bookOlid: string) {
-    const [likes, count] = await this.repo.findAndCountBy({
+    const [, count] = await this.repo.findAndCountBy({
       bookOlid: bookOlid,
     });
     return count;
@@ -42,9 +43,14 @@ export class LikeRepository {
     });
     return new Set(likes.map((l) => l.bookOlid));
   }
-  async getLikesByUser(userId: number) {
-    const result = await this.repo.findBy({
-      user: { id: userId },
+  async getLikesByUser(
+    userId: number,
+    pagination?: PaginationOptions,
+  ): Promise<[Like[], number]> {
+    const result = await this.repo.findAndCount({
+      where: { user: { id: userId } },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
     return result;
   }

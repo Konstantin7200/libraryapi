@@ -15,8 +15,9 @@ export class BookListController {
   async getBookList(
     @UserId() userId: number,
     @Query('type') type: BookListStatusWithAll,
+    @Query('page') page: number,
   ) {
-    const result = await this.bookListService.getBookList(userId, type);
+    const result = await this.bookListService.getBookList(userId, type, page);
     return result;
   }
   @UseGuards(AuthGuard)

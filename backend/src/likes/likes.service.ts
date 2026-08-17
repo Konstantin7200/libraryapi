@@ -6,6 +6,8 @@ import { LikeRepository } from '../db/likeRepository';
 import { bookDto } from '../books/dto/bookDto';
 import { BookApi } from '../api/bookApi';
 import { BooksService } from '../books/books.service';
+import { PageSize } from '../constants';
+import { Paginated, toPaginated } from '../pagination/paginated.dto';
 
 export type LikeEventType = {
   bookOlid: string;
@@ -63,16 +65,23 @@ export class LikesService {
     );
     return merge(likes$, heartbeat$);
   }
-  async getLikedBooksByUser(userId: number): Promise<bookDto[]> {
-    const likes = await this.likeRepository.getLikesByUser(userId);
+  async getLikedBooksByUser(
+    userId: number,
+    page: number | 'All',
+  ): Promise<Paginated<bookDto>> {
+    const pagination =
+      page === 'All' ? {} : { skip: (page - 1) * PageSize, take: PageSize };
+    const [likes, total] = await this.likeRepository.getLikesByUser(
+      userId,
+      pagination,
+    );
     const books: bookDto[] = [];
     for (let i = 0; i < likes.length; i++) {
       const like = likes[i];
       const book = await this.bookService.findOne(like.bookOlid);
       book.liked = true;
       books.push(book);
-      continue;
     }
-    return books;
+    return toPaginated(books, total);
   }
 }

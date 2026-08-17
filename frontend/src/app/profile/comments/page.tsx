@@ -3,18 +3,24 @@ import st from './page.module.scss';
 import { getMyComments } from '@/lib/comments';
 import { Pagination } from '@/components/pagination/pagination';
 import { redirect } from 'next/navigation';
+import { SearchParams } from 'next/dist/server/request/search-params';
 
-const Page = async () => {
-  const comments = await getMyComments();
+interface PageProps {
+  searchParams: Promise<SearchParams>;
+}
+const Page = async ({ searchParams }: PageProps) => {
+  const {page}=await searchParams;
+  const currentPage=parseInt(page as string)||1;
+  const { items: comments, pageCount } = await getMyComments(currentPage);
   const changePage=async(page:number)=>{
     'use server';
-    redirect(`comments?page=${page}`);
+    redirect(`/profile/comments?page=${page}`);
   }
   return (
     <div className={st.page}>
       <h1>Comments</h1>
       <div className={st.comments}>{comments.map((comment) => <Comment key={comment.id} {...comment}></Comment>)}</div>
-      <Pagination page={1} pageCount={10} handleChange={changePage}/>
+      <Pagination page={currentPage} pageCount={pageCount} handleChange={changePage}/>
     </div>
   );
 };

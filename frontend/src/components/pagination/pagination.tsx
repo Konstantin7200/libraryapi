@@ -12,12 +12,14 @@ export const Pagination: FC<PaginationProps> = ({
   page,
   pageCount,
 }) => {
+  if (pageCount <= 1) return null;
+  const currentPage = Math.min(Math.max(page, 1), pageCount);
   return (
     <MPagination
       onChange={(e, page) => {
         handleChange(page);
       }}
-      page={page}
+      page={currentPage}
       count={pageCount}
     />
   );

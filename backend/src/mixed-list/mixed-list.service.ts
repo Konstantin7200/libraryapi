@@ -3,6 +3,8 @@ import { BookListStatusWithAll } from '../bookList/dto/bookList.dto';
 import { LikesService } from '../likes/likes.service';
 import { BookListService } from '../bookList/book-list.service';
 import { bookDto } from '../books/dto/bookDto';
+import { PageSize } from '../constants';
+import { Paginated, toPaginated } from '../pagination/paginated.dto';
 
 @Injectable()
 export class MixedListService {
@@ -12,15 +14,24 @@ export class MixedListService {
   ) {}
   async getMixedList(
     userId: number,
+    page: number,
     type?: BookListStatusWithAll,
     liked?: boolean,
     query?: string,
-  ): Promise<bookDto[]> {
+  ): Promise<Paginated<bookDto>> {
     const books = await this.getBooks(userId, type, liked);
-    if (query === undefined) return books;
+    if (query === undefined) {
+      return toPaginated(
+        books.slice((page - 1) * PageSize, page * PageSize),
+        books.length,
+      );
+    }
     query = query.toLowerCase();
     const filteredBooks = books.filter((book) => this.filterBook(book, query));
-    return filteredBooks;
+    return toPaginated(
+      filteredBooks.slice((page - 1) * PageSize, page * PageSize),
+      filteredBooks.length,
+    );
   }
   private filterBook(book: bookDto, query: string): boolean {
     if (book.authors.find((author) => author.toLowerCase().includes(query)))
@@ -33,8 +44,12 @@ export class MixedListService {
     type: BookListStatusWithAll = 'All',
     liked?: boolean,
   ): Promise<bookDto[]> {
-    const likedBooks = await this.likesService.getLikedBooksByUser(userId);
-    const booksFromList = await this.bookListService.getBookList(userId, type);
+    const likedBooks = (
+      await this.likesService.getLikedBooksByUser(userId, 'All')
+    ).items;
+    const booksFromList = (
+      await this.bookListService.getBookList(userId, type, 'All')
+    ).items;
     const books =
       type === 'All'
         ? this.getAllBooks(likedBooks, booksFromList)

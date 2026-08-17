@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Sse,
   UseGuards,
 } from '@nestjs/common';
@@ -24,8 +25,8 @@ export class LikesController {
   }
   @Get()
   @UseGuards(AuthGuard)
-  async getLikesByUser(@UserId() userId: number) {
-    const result = await this.likesService.getLikedBooksByUser(userId);
+  async getLikesByUser(@UserId() userId: number, @Query('page') page: number) {
+    const result = await this.likesService.getLikedBooksByUser(userId, page);
     return result;
   }
   @Sse('sse/:olid')

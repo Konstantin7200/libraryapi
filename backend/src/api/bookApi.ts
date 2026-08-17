@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BooksApiPageSize } from '../constants';
+import { PageSize } from '../constants';
 import { CallQueue } from './callQueue';
 import { MemoryCashe } from '../cashe/memoryCashe';
 
@@ -60,7 +60,7 @@ export class BookApi {
     const params = new URLSearchParams();
     addParamIfNotEmpty(params, 'q', q?.toString());
     addParamIfNotEmpty(params, 'page', page.toString());
-    addParamIfNotEmpty(params, 'limit', BooksApiPageSize.toString());
+    addParamIfNotEmpty(params, 'limit', PageSize.toString());
     const response = await fetch(
       `${API_BASE}/search.json?${params.toString()}`,
     );

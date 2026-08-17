@@ -16,13 +16,13 @@ const page: FC<pageProps> = async ({ searchParams }) => {
   const handleChange = async (page: number) => {
     'use server';
     redirect(
-      `/books?${q ? `title=${q}&` : ''}${page ? `page=${page}` : ''}`,
+      `/books?${q ? `q=${q}&` : ''}${page ? `page=${page}` : ''}`,
     );
   };
   const handleSearch = async (q:string) => {
     'use server';
     redirect(
-      `/books?${q ? `title=${q}&` : ''}page=1`,
+      `/books?${q ? `q=${q}&` : ''}page=1`,
     );
   };
   return (

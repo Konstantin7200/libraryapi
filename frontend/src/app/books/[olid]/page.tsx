@@ -5,6 +5,7 @@ import st from './page.module.scss';
 import { getBook, getFakeBook } from '@/lib/books';
 import { createComment, getCommentByOlid } from '@/lib/comments';
 import { Comment } from '@/components/comment/comment';
+import { Pagination } from '@/components/pagination/pagination';
 import { Button, MenuItem, Select, TextField } from '@mui/material';
 import { refresh } from 'next/cache';
 import { isLoggedIn } from '@/lib/auth';
@@ -12,15 +13,25 @@ import { Like } from '@/components/like/like';
 import { bookListItemType, bookListOptions } from '@/types/BookListTypes';
 import { addToBookList } from '@/lib/bookList';
 import { LikeCount } from './likeCount';
+import { redirect } from 'next/navigation';
+import { SearchParams } from 'next/dist/server/request/search-params';
 
 interface PageProps {
   params: Promise<{ olid: string }>;
+  searchParams: Promise<SearchParams>;
 }
-const Page: FC<PageProps> = async ({ params }) => {
+const Page: FC<PageProps> = async ({ params, searchParams }) => {
   const loggedIn = await isLoggedIn();
   const olid = (await params).olid;
+  const { commentsPage } = await searchParams;
+  const currentPage = parseInt(commentsPage as string) || 1;
   const book = await getFakeBook(olid);
-  const comments = await getCommentByOlid(olid);
+  const { items: comments, pageCount } = await getCommentByOlid(olid, currentPage);
+
+  async function changeCommentsPage(page: number) {
+    'use server';
+    redirect(`/books/${olid}?commentsPage=${page}`);
+  }
 
   async function createCommentAction(formData: FormData) {
     'use server';
@@ -95,6 +106,11 @@ const Page: FC<PageProps> = async ({ params }) => {
             />
           ))}
       </div>
+      <Pagination
+        handleChange={changeCommentsPage}
+        page={currentPage}
+        pageCount={pageCount}
+      />
     </div>
   );
 };

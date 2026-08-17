@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BookListItem } from './entities/bookListItemEntity';
 import { BookListStatus } from '../bookList/dto/bookList.dto';
+import { PaginationOptions } from '../pagination/paginated.dto';
 
 @Injectable()
 export class BookListRepository {
@@ -10,15 +11,30 @@ export class BookListRepository {
     @InjectRepository(BookListItem)
     private readonly repo: Repository<BookListItem>,
   ) {}
-  async getByType(userId: number, type: BookListStatus) {
-    const result = await this.repo.findBy({
-      status: type,
-      user: { id: userId },
+  async getByType(
+    userId: number,
+    type: BookListStatus,
+    pagination?: PaginationOptions,
+  ): Promise<[BookListItem[], number]> {
+    const result = await this.repo.findAndCount({
+      where: {
+        status: type,
+        user: { id: userId },
+      },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
     return result;
   }
-  async getAll(userId: number) {
-    const result = await this.repo.findBy({ user: { id: userId } });
+  async getAll(
+    userId: number,
+    pagination?: PaginationOptions,
+  ): Promise<[BookListItem[], number]> {
+    const result = await this.repo.findAndCount({
+      where: { user: { id: userId } },
+      skip: pagination?.skip,
+      take: pagination?.take,
+    });
     return result;
   }
   async upsertBookToList(

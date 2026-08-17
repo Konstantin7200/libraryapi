@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { Comment } from './entities/commentEntity';
 import { createCommentDto } from '../comments/dto/createComment.dto';
+import { PaginationOptions } from '../pagination/paginated.dto';
 
 @Injectable()
 export class CommentRepository {
@@ -10,17 +11,27 @@ export class CommentRepository {
     @InjectRepository(Comment)
     private readonly repo: Repository<Comment>,
   ) {}
-  async findByBook(bookOlid: string) {
-    const result = await this.repo.find({
+  async findByBook(
+    bookOlid: string,
+    pagination?: PaginationOptions,
+  ): Promise<[Comment[], number]> {
+    const result = await this.repo.findAndCount({
       where: { bookOlid },
       relations: { user: true },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
     return result;
   }
-  async findByUser(userId: number) {
-    const result = await this.repo.find({
+  async findByUser(
+    userId: number,
+    pagination?: PaginationOptions,
+  ): Promise<[Comment[], number]> {
+    const result = await this.repo.findAndCount({
       where: { user: { id: userId } },
       relations: { user: true },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
     return result;
   }

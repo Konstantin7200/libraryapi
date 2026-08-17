@@ -30,17 +30,21 @@ export class CommentsController {
   }
   @UseGuards(AuthGuard)
   @Get('mine')
-  async getCommentsByUser(@UserId() userId: number | null) {
+  async getCommentsByUser(
+    @UserId() userId: number | null,
+    @Query('page') page: number,
+  ) {
     if (userId === null) throw Error('Null id from the token');
-    return this.commentsService.getCommentsByUser(userId);
+    return this.commentsService.getCommentsByUser(userId, page);
   }
   @Get()
   @UseGuards(AttachUserIdGuard)
   async getCommentsByBook(
     @Query('olid') bookOlid: string,
     @UserId() userId: number | null,
+    @Query('page') page: number,
   ) {
-    return this.commentsService.getCommentsByBook(bookOlid, userId);
+    return this.commentsService.getCommentsByBook(bookOlid, userId, page);
   }
   @Put()
   @UseGuards(AuthGuard)

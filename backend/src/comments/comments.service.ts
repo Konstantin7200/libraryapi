@@ -4,6 +4,8 @@ import { CommentRepository } from '../db/commentRepository';
 import { commentDto } from './dto/comment.dto';
 import { Comment } from '../db/entities/commentEntity';
 import { UserService } from '../user/user.service';
+import { PageSize } from '../constants';
+import { Paginated, toPaginated } from '../pagination/paginated.dto';
 
 @Injectable()
 export class CommentsService {
@@ -11,19 +13,29 @@ export class CommentsService {
     private readonly commentRepository: CommentRepository,
     private readonly userService: UserService,
   ) {}
-  async getCommentsByUser(userId: number): Promise<commentDto[]> {
-    const dbComments = await this.commentRepository.findByUser(userId);
+  async getCommentsByUser(
+    userId: number,
+    page: number,
+  ): Promise<Paginated<commentDto>> {
+    const [dbComments, total] = await this.commentRepository.findByUser(
+      userId,
+      { skip: (page - 1) * PageSize, take: PageSize },
+    );
     const login = await this.userService.getLogin(userId);
     const comments = this.dbCommentsToComments(dbComments, userId, login);
-    return comments;
+    return toPaginated(comments, total);
   }
   async getCommentsByBook(
     bookOlid: string,
     userId: number | null,
-  ): Promise<commentDto[]> {
-    const dbComments = await this.commentRepository.findByBook(bookOlid);
+    page: number,
+  ): Promise<Paginated<commentDto>> {
+    const [dbComments, total] = await this.commentRepository.findByBook(
+      bookOlid,
+      { skip: (page - 1) * PageSize, take: PageSize },
+    );
     const comments = this.dbCommentsToComments(dbComments, userId);
-    return comments;
+    return toPaginated(comments, total);
   }
   async createComment(comment: createCommentDto, userId: number) {
     const created = await this.commentRepository.createOne(comment, userId);
