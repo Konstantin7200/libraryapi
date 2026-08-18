@@ -29,7 +29,7 @@ export class BookApi {
 
   async getBooksByOlids(olids: string[]): Promise<RawSearchResult> {
     const unique = [...new Set(olids)];
-    if (unique.length === 0) return { docs: [] };
+    if (unique.length === 0) return { docs: [], numFound: 0 };
     const key = `booksByOlids|${[...unique].sort().join(',')}`;
     return this.getOrRun(key, () => this._getBooksByOlids(unique));
   }
@@ -109,7 +109,8 @@ export class BookApi {
       const data = (await response.json()) as RawSearchResult;
       docs.push(...data.docs);
     }
-    return { docs: docs.filter(apiSearchDocIsConvertible) };
+    const filtered = docs.filter(apiSearchDocIsConvertible);
+    return { docs: filtered, numFound: filtered.length };
   }
 
   private async _getAuthor(authorKey: string) {
@@ -121,11 +122,12 @@ export class BookApi {
 
 type RawSearchResult = {
   docs: ApiSearchDoc[];
+  numFound: number;
 };
 type ApiSearchDoc = {
   key: string;
   title: string;
-  author_name: string[];
+  author_name?: string[];
   cover_i?: string | null;
 };
 type ApiBookByOlid = {
@@ -155,9 +157,5 @@ function addParamIfNotEmpty(
 }
 
 function apiSearchDocIsConvertible(doc: ApiSearchDoc): boolean {
-  return (
-    Object.hasOwn(doc, 'key') &&
-    Object.hasOwn(doc, 'title') &&
-    Object.hasOwn(doc, 'author_name')
-  );
+  return Object.hasOwn(doc, 'key') && Object.hasOwn(doc, 'title');
 }

@@ -7,6 +7,7 @@ const BookBatchSize = 50;
 const MemoryCacheTtl = 60 * 30;
 const RedisTtl = 60 * 60 * 12;
 const RandomPageCount = 5;
+const NoAuthorPlaceholder = 'No author found';
 
 export {
   AccessTokenCookie,
@@ -18,4 +19,5 @@ export {
   MemoryCacheTtl,
   RedisTtl,
   RandomPageCount,
+  NoAuthorPlaceholder,
 };

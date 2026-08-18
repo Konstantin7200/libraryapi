@@ -1,8 +1,9 @@
 import { bookDto } from '../books/dto/bookDto';
+import { NoAuthorPlaceholder } from '../constants';
 
 type ApiBook = {
   title: string;
-  author_name: string[];
+  author_name?: string[];
   cover_i: string | null;
   key: string;
 };
@@ -19,7 +20,7 @@ export function mapToBookList(docs: object[]): bookDto[] {
       : null;
     return {
       title: title,
-      authors: author_name,
+      authors: author_name?.length ? author_name : [NoAuthorPlaceholder],
       olid: key.substring('/works/'.length),
       coversUrl: coversUrl,
       liked: false,
@@ -28,18 +29,14 @@ export function mapToBookList(docs: object[]): bookDto[] {
 }
 
 function validateData(data: object): ApiBook | null {
-  if (
-    Object.hasOwn(data, 'title') &&
-    Object.hasOwn(data, 'author_name') &&
-    Object.hasOwn(data, 'key')
-  ) {
-    if (Object.hasOwn(data, 'cover_i')) return data as ApiBook;
-    else {
-      return {
-        ...(data as ApiBook),
-        cover_i: null,
-      };
-    }
+  if (Object.hasOwn(data, 'title') && Object.hasOwn(data, 'key')) {
+    const book = data as ApiBook;
+    return {
+      title: book.title,
+      key: book.key,
+      author_name: book.author_name,
+      cover_i: Object.hasOwn(data, 'cover_i') ? book.cover_i : null,
+    };
   } else {
     return null;
   }

@@ -13,6 +13,7 @@ interface pageProps {
 const page: FC<pageProps> = async ({ searchParams }) => {
   const { q, page } = await searchParams;
   const data = q ? await getBooks(q,page) : await getRandomBooks(page);
+  const { items: books, pageCount } = data;
   const handleChange = async (page: number) => {
     'use server';
     redirect(
@@ -29,11 +30,11 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     <div className={st.page}>
       <h1>Books</h1>
       <BookToolbar handleSearch={handleSearch} />
-      <BookCont books={data} />
+      <BookCont books={books} />
       <Pagination
         handleChange={handleChange}
         page={parseInt(page as string)}
-        pageCount={10}
+        pageCount={pageCount}
       ></Pagination>
     </div>
   );

@@ -5,6 +5,8 @@ import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
 import { mapToBookList } from '../utils/mapToBookList';
 import { RedisCashe } from '../cashe/redisCashe';
+import { Paginated, toPaginated } from '../pagination/paginated.dto';
+import { PageSize, RandomPageCount } from '../constants';
 
 @Injectable()
 export class BooksService {
@@ -89,25 +91,36 @@ export class BooksService {
     page: number,
     q?: string,
     userId?: number | null,
-  ): Promise<bookDto[]> {
+  ): Promise<Paginated<bookDto>> {
     const data = await this.bookApi.searchBooks(page, q);
     const books = mapToBookList(data.docs);
-    if (userId == null) return books;
+    if (userId == null) return toPaginated(books, data.numFound);
     const likedOlids = await this.likeRepository.getLikedOlids(
       userId,
       books.map((b) => b.olid),
     );
-    return books.map((b) => ({ ...b, liked: likedOlids.has(b.olid) }));
+    const likedBooks = books.map((b) => ({
+      ...b,
+      liked: likedOlids.has(b.olid),
+    }));
+    return toPaginated(likedBooks, data.numFound);
   }
-  async getRandom(page: number, userId?: number | null): Promise<bookDto[]> {
+  async getRandom(
+    page: number,
+    userId?: number | null,
+  ): Promise<Paginated<bookDto>> {
     const data = await this.bookApi.getRandomBooks(page);
     const books = mapToBookList(data.docs);
-    if (userId == null) return books;
+    if (userId == null) return toPaginated(books, RandomPageCount * PageSize);
     const likedOlids = await this.likeRepository.getLikedOlids(
       userId,
       books.map((b) => b.olid),
     );
-    return books.map((b) => ({ ...b, liked: likedOlids.has(b.olid) }));
+    const likedBooks = books.map((b) => ({
+      ...b,
+      liked: likedOlids.has(b.olid),
+    }));
+    return toPaginated(likedBooks, RandomPageCount * PageSize);
   }
   private async isLiked(olid: string, userId?: number | null) {
     if (userId == null) return false;
