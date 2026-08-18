@@ -75,13 +75,10 @@ export class LikesService {
       userId,
       pagination,
     );
-    const books: bookDto[] = [];
-    for (let i = 0; i < likes.length; i++) {
-      const like = likes[i];
-      const book = await this.bookService.findOne(like.bookOlid);
-      book.liked = true;
-      books.push(book);
-    }
+    const books = await this.bookService.findManyByOlids(
+      likes.map((like) => like.bookOlid),
+    );
+    books.forEach((book) => (book.liked = true));
     return toPaginated(books, total);
   }
 }

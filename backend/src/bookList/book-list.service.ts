@@ -23,11 +23,9 @@ export class BookListService {
       type === 'All'
         ? await this.bookListRepository.getAll(userId, pagination)
         : await this.bookListRepository.getByType(userId, type, pagination);
-    const books: bookDto[] = [];
-    for (let i = 0; i < bookList.length; i++) {
-      const book = await this.bookService.findOne(bookList[i].bookOlid);
-      books.push(book);
-    }
+    const books = await this.bookService.findManyByOlids(
+      bookList.map((bookItem) => bookItem.bookOlid),
+    );
     return toPaginated(books, total);
   }
   async addBookToList(userId: number, bookOlid: string, type: BookListStatus) {

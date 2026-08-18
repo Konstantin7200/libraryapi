@@ -25,7 +25,7 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
   const olid = (await params).olid;
   const { commentsPage } = await searchParams;
   const currentPage = parseInt(commentsPage as string) || 1;
-  const book = await getFakeBook(olid);
+  const book = await getBook(olid);
   const { items: comments, pageCount } = await getCommentByOlid(olid, currentPage);
 
   async function changeCommentsPage(page: number) {

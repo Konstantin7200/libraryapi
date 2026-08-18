@@ -54,6 +54,37 @@ export class BooksService {
     await this.redisCashe.setBook(olid, book);
     return book;
   }
+  async findManyByOlids(olids: string[]): Promise<bookDto[]> {
+    if (olids.length === 0) return [];
+    const unique = [...new Set(olids)];
+    const cached = await Promise.all(
+      unique.map(async (olid) => {
+        const book = await this.redisCashe.getBook(olid);
+        return { olid, book };
+      }),
+    );
+    const booksByOlid = new Map<string, bookDto>();
+    cached.forEach(({ olid, book }) => {
+      if (book !== null) booksByOlid.set(olid, book);
+    });
+    let missed = unique.filter((olid) => !booksByOlid.has(olid));
+    if (missed.length > 0) {
+      const data = await this.bookApi.getBooksByOlids(missed);
+      const books = mapToBookList(data.docs);
+      for (const book of books) {
+        booksByOlid.set(book.olid, book);
+        await this.redisCashe.setBook(book.olid, book);
+      }
+    }
+    missed = unique.filter((olid) => !booksByOlid.has(olid));
+    for (const olid of missed) {
+      const book = await this.findOne(olid);
+      booksByOlid.set(olid, book);
+    }
+    return olids
+      .map((olid) => booksByOlid.get(olid))
+      .filter((book): book is bookDto => book !== undefined);
+  }
   async findMany(
     page: number,
     q?: string,

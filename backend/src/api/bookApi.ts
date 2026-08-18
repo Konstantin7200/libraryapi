@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PageSize } from '../constants';
+import { BookBatchSize, PageSize } from '../constants';
 import { CallQueue } from './callQueue';
 import { MemoryCashe } from '../cashe/memoryCashe';
 
@@ -22,6 +22,13 @@ export class BookApi {
 
   async getBook(olid: string) {
     return this.getOrRun(`book|${olid}`, () => this._getBook(olid));
+  }
+
+  async getBooksByOlids(olids: string[]): Promise<RawSearchResult> {
+    const unique = [...new Set(olids)];
+    if (unique.length === 0) return { docs: [] };
+    const key = `booksByOlids|${[...unique].sort().join(',')}`;
+    return this.getOrRun(key, () => this._getBooksByOlids(unique));
   }
 
   async getAuthor(authorKey: string) {
@@ -74,6 +81,24 @@ export class BookApi {
     return data;
   }
 
+  private async _getBooksByOlids(olids: string[]) {
+    const docs: ApiSearchDoc[] = [];
+    for (let i = 0; i < olids.length; i += BookBatchSize) {
+      const chunk = olids.slice(i, i + BookBatchSize);
+      const query = chunk.map((olid) => `"/works/${olid}"`).join(' OR ');
+      const params = new URLSearchParams();
+      params.append('q', `key:(${query})`);
+      params.append('fields', 'key,title,author_name,cover_i');
+      params.append('limit', chunk.length.toString());
+      const response = await fetch(
+        `${API_BASE}/search.json?${params.toString()}`,
+      );
+      const data = (await response.json()) as RawSearchResult;
+      docs.push(...data.docs);
+    }
+    return { docs: docs.filter(apiSearchDocIsConvertible) };
+  }
+
   private async _getAuthor(authorKey: string) {
     const response = await fetch(`${API_BASE}/authors/${authorKey}.json`);
     const data = (await response.json()) as ApiAuthor;
@@ -82,7 +107,13 @@ export class BookApi {
 }
 
 type RawSearchResult = {
-  docs: object[];
+  docs: ApiSearchDoc[];
+};
+type ApiSearchDoc = {
+  key: string;
+  title: string;
+  author_name: string[];
+  cover_i?: string | null;
 };
 type ApiBookByOlid = {
   description: {
@@ -108,4 +139,12 @@ function addParamIfNotEmpty(
   value: string | undefined,
 ) {
   if (value != undefined && value !== '') params.append(property, value);
+}
+
+function apiSearchDocIsConvertible(doc: ApiSearchDoc): boolean {
+  return (
+    Object.hasOwn(doc, 'key') &&
+    Object.hasOwn(doc, 'title') &&
+    Object.hasOwn(doc, 'author_name')
+  );
 }

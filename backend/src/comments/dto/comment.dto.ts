@@ -6,4 +6,7 @@ type commentDto = {
   mine: boolean;
   updatedAt: string;
 };
-export type { commentDto };
+type UserHistoryCommentDto = commentDto & {
+  bookTitle: string;
+};
+export type { commentDto, UserHistoryCommentDto };

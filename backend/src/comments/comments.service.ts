@@ -1,29 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { createCommentDto } from './dto/createComment.dto';
 import { CommentRepository } from '../db/commentRepository';
-import { commentDto } from './dto/comment.dto';
+import { commentDto, UserHistoryCommentDto } from './dto/comment.dto';
 import { Comment } from '../db/entities/commentEntity';
 import { UserService } from '../user/user.service';
 import { PageSize } from '../constants';
 import { Paginated, toPaginated } from '../pagination/paginated.dto';
+import { BooksService } from '../books/books.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentRepository: CommentRepository,
     private readonly userService: UserService,
+    private readonly bookService: BooksService,
   ) {}
   async getCommentsByUser(
     userId: number,
     page: number,
-  ): Promise<Paginated<commentDto>> {
+  ): Promise<Paginated<UserHistoryCommentDto>> {
     const [dbComments, total] = await this.commentRepository.findByUser(
       userId,
       { skip: (page - 1) * PageSize, take: PageSize },
     );
     const login = await this.userService.getLogin(userId);
     const comments = this.dbCommentsToComments(dbComments, userId, login);
-    return toPaginated(comments, total);
+    const commentsWithBookTitle = await this.addBookTitleToComments(comments);
+    return toPaginated(commentsWithBookTitle, total);
   }
   async getCommentsByBook(
     bookOlid: string,
@@ -79,5 +82,20 @@ export class CommentsService {
       });
     }
     return comments;
+  }
+  private async addBookTitleToComments(
+    comments: commentDto[],
+  ): Promise<UserHistoryCommentDto[]> {
+    const books = await this.bookService.findManyByOlids(
+      comments.map((comment) => comment.bookOlid),
+    );
+    const commentsWithTitles: UserHistoryCommentDto[] = [];
+    for (let i = 0; i < comments.length; i++) {
+      commentsWithTitles.push({
+        ...comments[i],
+        bookTitle: books[i].title,
+      });
+    }
+    return commentsWithTitles;
   }
 }

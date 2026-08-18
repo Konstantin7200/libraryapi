@@ -1,4 +1,4 @@
-import { CommentType } from '@/types/CommentType';
+import { CommentType, CommentTypeWithTitle } from '@/types/CommentType';
 import { Paginated } from '@/types/Paginated';
 import { apiFetch } from './apiWrapper';
 
@@ -16,10 +16,10 @@ export async function updateComment(id: number, text: string) {
     },
   });
 }
-export async function getMyComments(page=1): Promise<Paginated<CommentType>>{
+export async function getMyComments(page=1): Promise<Paginated<CommentTypeWithTitle>>{
   const result=await apiFetch(`/comments/mine?page=${page}`)
   const data= await result.json();
-  return data as Paginated<CommentType>;
+  return data as Paginated<CommentTypeWithTitle>;
 }
 export async function deleteComment(id: number) {
   await apiFetch(`/comments/${id}`, { method: 'DELETE' });
