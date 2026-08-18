@@ -2,12 +2,12 @@ type CommentType = {
   text: string;
   bookOlid: string;
   updatedAt: string;
-  login:string;
-  mine:boolean;
-  id:number
+  login: string;
+  mine: boolean;
+  id: number;
 };
-type CommentTypeWithTitle=CommentType&{
-  bookTitle:string;
-}
+type CommentTypeWithTitle = CommentType & {
+  bookTitle: string;
+};
 
-export type { CommentType,CommentTypeWithTitle };
+export type { CommentType, CommentTypeWithTitle };

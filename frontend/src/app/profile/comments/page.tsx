@@ -9,18 +9,26 @@ interface PageProps {
   searchParams: Promise<SearchParams>;
 }
 const Page = async ({ searchParams }: PageProps) => {
-  const {page}=await searchParams;
-  const currentPage=parseInt(page as string)||1;
+  const { page } = await searchParams;
+  const currentPage = parseInt(page as string) || 1;
   const { items: comments, pageCount } = await getMyComments(currentPage);
-  const changePage=async(page:number)=>{
+  const changePage = async (page: number) => {
     'use server';
     redirect(`/profile/comments?page=${page}`);
-  }
+  };
   return (
     <div className={st.page}>
       <h1>Comments</h1>
-      <div className={st.comments}>{comments.map(comment => <CommentWithTitle key={comment.id} {...comment}/>)}</div>
-      <Pagination page={currentPage} pageCount={pageCount} handleChange={changePage}/>
+      <div className={st.comments}>
+        {comments.map((comment) => (
+          <CommentWithTitle key={comment.id} {...comment} />
+        ))}
+      </div>
+      <Pagination
+        page={currentPage}
+        pageCount={pageCount}
+        handleChange={changePage}
+      />
     </div>
   );
 };

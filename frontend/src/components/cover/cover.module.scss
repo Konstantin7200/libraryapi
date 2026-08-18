@@ -1,0 +1,35 @@
+.EmptyCover{
+    width: 300px;
+    height: 450px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+    background: #f5f6f7;
+    border: 2px dashed #c9cdd1;
+    border-radius: 12px;
+    color: #8a8f98;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background: #eceff1;
+        border-color: #aab0b6;
+        color: #6f767e;
+    }
+
+    .icon {
+        font-size: 3.5rem;
+        opacity: 0.6;
+    }
+
+    .text {
+        font-size: 0.95rem;
+        line-height: 1.45;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+}

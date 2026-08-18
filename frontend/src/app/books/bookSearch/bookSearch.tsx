@@ -5,14 +5,19 @@ import { FC } from 'react';
 
 interface BookSearchProps {
   title?: string;
-  id:string;
+  id: string;
   value: string;
   setValue: (val: string) => void;
 }
-export const BookSearch: FC<BookSearchProps> = ({ title,id, value, setValue }) => {
+export const BookSearch: FC<BookSearchProps> = ({
+  title,
+  id,
+  value,
+  setValue,
+}) => {
   return (
     <div>
-      <InputLabel htmlFor={`${id}-input`}>{title&&title}</InputLabel>
+      <InputLabel htmlFor={`${id}-input`}>{title && title}</InputLabel>
       <Input
         id={`${id}-input`}
         value={value}

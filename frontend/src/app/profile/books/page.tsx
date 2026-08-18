@@ -84,7 +84,11 @@ const Page: FC<PageProps> = async ({ searchParams }) => {
         </Button>
       </form>
       <BookCont books={books} />
-      <Pagination handleChange={handleChange} page={currentPage} pageCount={pageCount}/>
+      <Pagination
+        handleChange={handleChange}
+        page={currentPage}
+        pageCount={pageCount}
+      />
     </div>
   );
 };

@@ -11,34 +11,44 @@ import { FC } from 'react';
 interface PageProps {
   searchParams: Promise<SearchParams>;
 }
-const Page:FC<PageProps> = async ({searchParams}) => {
-  const {type, page}=await searchParams;
-  const currentPage=parseInt(page as string)||1;
-  const bookList=bookListOptions.find((option)=>option===type);
+const Page: FC<PageProps> = async ({ searchParams }) => {
+  const { type, page } = await searchParams;
+  const currentPage = parseInt(page as string) || 1;
+  const bookList = bookListOptions.find((option) => option === type);
   if (!bookList) {
     redirect(`/profile/lists?type=All&page=${currentPage}`);
   }
-  const { items: books, pageCount } = await getBookList(bookList, currentPage)
-  const getBooksFromListAction=async (formData:FormData)=>{
+  const { items: books, pageCount } = await getBookList(bookList, currentPage);
+  const getBooksFromListAction = async (formData: FormData) => {
     'use server';
-    const selectedBookList=formData.get('booklist') as bookListItemType
-    redirect(`/profile/lists?type=${selectedBookList}&page=1`)
-  }
-  const handleChange=async (page:number)=>{
+    const selectedBookList = formData.get('booklist') as bookListItemType;
+    redirect(`/profile/lists?type=${selectedBookList}&page=1`);
+  };
+  const handleChange = async (page: number) => {
     'use server';
-    redirect(`/profile/lists?type=${bookList}&page=${page}`)
-  }
+    redirect(`/profile/lists?type=${bookList}&page=${page}`);
+  };
   return (
     <div className={st.page}>
       <h1>Lists</h1>
       <form className={st.BookListWrapper} action={getBooksFromListAction}>
-        <Select fullWidth name='booklist' defaultValue={bookList}>
-          {bookListOptions.map((v) => <MenuItem key={v} value={v}>{v}</MenuItem>)}
+        <Select fullWidth name="booklist" defaultValue={bookList}>
+          {bookListOptions.map((v) => (
+            <MenuItem key={v} value={v}>
+              {v}
+            </MenuItem>
+          ))}
         </Select>
-        <Button variant='outlined' type='Submit'>Show this list</Button>
+        <Button variant="outlined" type="Submit">
+          Show this list
+        </Button>
       </form>
       <BookCont books={books} />
-      <Pagination handleChange={handleChange} page={currentPage} pageCount={pageCount}/>
+      <Pagination
+        handleChange={handleChange}
+        page={currentPage}
+        pageCount={pageCount}
+      />
     </div>
   );
 };

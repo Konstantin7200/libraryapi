@@ -12,19 +12,15 @@ interface pageProps {
 }
 const page: FC<pageProps> = async ({ searchParams }) => {
   const { q, page } = await searchParams;
-  const data = q ? await getBooks(q,page) : await getRandomBooks(page);
+  const data = q ? await getBooks(q, page) : await getRandomBooks(page);
   const { items: books, pageCount } = data;
   const handleChange = async (page: number) => {
     'use server';
-    redirect(
-      `/books?${q ? `q=${q}&` : ''}${page ? `page=${page}` : ''}`,
-    );
+    redirect(`/books?${q ? `q=${q}&` : ''}${page ? `page=${page}` : ''}`);
   };
-  const handleSearch = async (q:string) => {
+  const handleSearch = async (q: string) => {
     'use server';
-    redirect(
-      `/books?${q ? `q=${q}&` : ''}page=1`,
-    );
+    redirect(`/books?${q ? `q=${q}&` : ''}page=1`);
   };
   return (
     <div className={st.page}>

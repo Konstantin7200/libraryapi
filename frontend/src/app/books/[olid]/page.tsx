@@ -1,5 +1,4 @@
 import { FC } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import st from './page.module.scss';
 import { getBook, getFakeBook } from '@/lib/books';
@@ -13,6 +12,7 @@ import { Like } from '@/components/like/like';
 import { bookListItemType, bookListOptions } from '@/types/BookListTypes';
 import { addToBookList } from '@/lib/bookList';
 import { LikeCount } from './likeCount';
+import { Cover } from '@/components/cover/cover';
 import { redirect } from 'next/navigation';
 import { SearchParams } from 'next/dist/server/request/search-params';
 
@@ -26,7 +26,10 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
   const { commentsPage } = await searchParams;
   const currentPage = parseInt(commentsPage as string) || 1;
   const book = await getBook(olid);
-  const { items: comments, pageCount } = await getCommentByOlid(olid, currentPage);
+  const { items: comments, pageCount } = await getCommentByOlid(
+    olid,
+    currentPage,
+  );
 
   async function changeCommentsPage(page: number) {
     'use server';
@@ -41,10 +44,10 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
       refresh();
     }
   }
-  async function addToBookListAction(formData:FormData) {
+  async function addToBookListAction(formData: FormData) {
     'use server';
-    const selectedOption=formData.get('booklist') as bookListItemType
-    await addToBookList(olid,selectedOption)
+    const selectedOption = formData.get('booklist') as bookListItemType;
+    await addToBookList(olid, selectedOption);
   }
 
   return (
@@ -54,11 +57,9 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
       </Link>
       <div className={st.layout}>
         <div className={st.cover}>
-          <Image
-            src={book.coversUrl}
-            width={300}
-            height={450}
-            alt={`${book.title} cover image`}
+          <Cover
+            coversUrl={book.coversUrl}
+            title={book.title}
             className={st.coverImage}
           />
         </div>
@@ -66,14 +67,20 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
           <h1 className={st.title}>{book.title}</h1>
           <p className={st.author}>{book.authors.join(' ,')}</p>
           <div className={st.LikeWrapper}>
-            <LikeCount initialLikes={book.likes} olid={olid}/>
-            <Like position='relative' liked={book.liked} olid={olid}/>
+            <LikeCount initialLikes={book.likes} olid={olid} />
+            <Like position="relative" liked={book.liked} olid={olid} />
           </div>
           <form className={st.BookListWrapper} action={addToBookListAction}>
-            <Select fullWidth name='booklist' defaultValue={bookListOptions[0]}>
-              {bookListOptions.map((v)=><MenuItem key={v} value={v}>{v}</MenuItem>)}
+            <Select fullWidth name="booklist" defaultValue={bookListOptions[0]}>
+              {bookListOptions.map((v) => (
+                <MenuItem key={v} value={v}>
+                  {v}
+                </MenuItem>
+              ))}
             </Select>
-            <Button variant='outlined' type='Submit'>Add to booklist</Button>
+            <Button variant="outlined" type="Submit">
+              Add to booklist
+            </Button>
           </form>
         </div>
       </div>
@@ -92,19 +99,14 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
           <TextField
             label="You cant write comments"
             disabled
-            value='To write comments you need to login first'
+            value="To write comments you need to login first"
             error
-            ></TextField>
+          ></TextField>
         )}
 
         {comments.length === 0 && <p>No comments here yet</p>}
         {comments.length !== 0 &&
-          comments.map((comment) => (
-            <Comment
-              key={comment.id}
-              {...comment}
-            />
-          ))}
+          comments.map((comment) => <Comment key={comment.id} {...comment} />)}
       </div>
       <Pagination
         handleChange={changeCommentsPage}

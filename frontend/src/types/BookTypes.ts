@@ -1,13 +1,13 @@
 type BookType = {
   olid: string;
-  coversUrl: string;
+  coversUrl: string | null;
   title: string;
   authors: string[];
-  liked:boolean;
+  liked: boolean;
 };
 type ExtendedBookType = BookType & {
   description: string;
-  likes:number;
+  likes: number;
 };
 
 export type { BookType, ExtendedBookType };

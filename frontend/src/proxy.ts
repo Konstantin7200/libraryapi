@@ -14,15 +14,14 @@ export async function proxy(request: NextRequest) {
   }
 
   const refreshToken = request.cookies.get(RefreshTokenCookie)?.value;
-  if(refreshToken===undefined)
-    return NextResponse.next();
+  if (refreshToken === undefined) return NextResponse.next();
   const refreshResponse = await fetch(`${EnvConfig.API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: { Cookie: `${RefreshTokenCookie}=${refreshToken}` },
   });
 
   if (!refreshResponse.ok) {
-    const nextResponse = NextResponse.next()
+    const nextResponse = NextResponse.next();
     nextResponse.cookies.delete(AccessTokenCookie);
     nextResponse.cookies.delete(RefreshTokenCookie);
     return nextResponse;

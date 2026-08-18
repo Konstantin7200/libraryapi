@@ -5,7 +5,7 @@ import { FC, useState } from 'react';
 import st from './bookToolbar.module.scss';
 
 interface BookToolbarProps {
-  handleSearch: (q:string) => void;
+  handleSearch: (q: string) => void;
 }
 export const BookToolbar: FC<BookToolbarProps> = ({ handleSearch }) => {
   const [query, setQuery] = useState('');
@@ -13,15 +13,12 @@ export const BookToolbar: FC<BookToolbarProps> = ({ handleSearch }) => {
     <div className={st.BookToolbar}>
       <div>
         <BookSearch
-          id='Query search'
+          id="Query search"
           value={query}
           setValue={setQuery}
         ></BookSearch>
       </div>
-      <Button
-        onClick={() => handleSearch(query)}
-        variant="contained"
-      >
+      <Button onClick={() => handleSearch(query)} variant="contained">
         Search
       </Button>
     </div>

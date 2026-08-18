@@ -1,16 +1,31 @@
 'use client';
-import { FC, FormEvent, useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import {
+  FC,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { Button } from '@mui/material';
 import { CommentType } from '@/types/CommentType';
 import { deleteComment, updateComment } from './actions';
 import st from './baseComment.module.scss';
 import Link from 'next/link';
 
-
-type BaseCommentProps=CommentType&{
-  linkText:string|null
-}
-export const BaseComment: FC<BaseCommentProps> = ({ text,bookOlid, updatedAt, login, id, mine, linkText }) => {
+type BaseCommentProps = CommentType & {
+  linkText: string | null;
+};
+export const BaseComment: FC<BaseCommentProps> = ({
+  text,
+  bookOlid,
+  updatedAt,
+  login,
+  id,
+  mine,
+  linkText,
+}) => {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [expanded, setExpanded] = useState(false);
@@ -54,12 +69,26 @@ export const BaseComment: FC<BaseCommentProps> = ({ text,bookOlid, updatedAt, lo
     <div className={st.comment}>
       {editing ? (
         <form onSubmit={handleSave} className={st.form}>
-          <textarea name="text" defaultValue={text} required className={st.editField} />
+          <textarea
+            name="text"
+            defaultValue={text}
+            required
+            className={st.editField}
+          />
           <div className={st.actions}>
-            <Button type="submit" size="small" variant="contained" disabled={isPending}>
+            <Button
+              type="submit"
+              size="small"
+              variant="contained"
+              disabled={isPending}
+            >
               {isPending ? 'Saving…' : 'Save'}
             </Button>
-            <Button type="button" size="small" onClick={() => setEditing(false)}>
+            <Button
+              type="button"
+              size="small"
+              onClick={() => setEditing(false)}
+            >
               Cancel
             </Button>
           </div>
@@ -67,11 +96,18 @@ export const BaseComment: FC<BaseCommentProps> = ({ text,bookOlid, updatedAt, lo
       ) : (
         <>
           <div className={st.RowCont}>
-            <p ref={textRef} className={expanded ? st.text : `${st.text} ${st.clamped}`}>
+            <p
+              ref={textRef}
+              className={expanded ? st.text : `${st.text} ${st.clamped}`}
+            >
               <span className={st.login}>{login}: </span>
               {text}
             </p>
-            {linkText!=null&&<Link className={st.bookLink} href={`/books/${bookOlid}`}>{linkText}</Link>}
+            {linkText != null && (
+              <Link className={st.bookLink} href={`/books/${bookOlid}`}>
+                {linkText}
+              </Link>
+            )}
           </div>
           {overflowing && (
             <div className={st.RowCont}>
