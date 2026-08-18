@@ -5,14 +5,14 @@ import { Pagination } from '@/components/pagination/pagination';
 import { redirect } from 'next/navigation';
 import { BookToolbar } from './bookToolbar/bookToolbar';
 import { BookCont } from '@/components/bookCont/bookCont';
-import { getBooks } from '@/lib/books';
+import { getBooks, getRandomBooks } from '@/lib/books';
 
 interface pageProps {
   searchParams: Promise<SearchParams>;
 }
 const page: FC<pageProps> = async ({ searchParams }) => {
   const { q, page } = await searchParams;
-  const data = q ? await getBooks({ q, page }) : [];
+  const data = q ? await getBooks(q,page) : await getRandomBooks(page);
   const handleChange = async (page: number) => {
     'use server';
     redirect(

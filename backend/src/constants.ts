@@ -6,6 +6,7 @@ const PageSize = 10;
 const BookBatchSize = 50;
 const MemoryCacheTtl = 60 * 30;
 const RedisTtl = 60 * 60 * 12;
+const RandomPageCount = 5;
 
 export {
   AccessTokenCookie,
@@ -16,4 +17,5 @@ export {
   BookBatchSize,
   MemoryCacheTtl,
   RedisTtl,
+  RandomPageCount,
 };

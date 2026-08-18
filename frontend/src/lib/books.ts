@@ -3,17 +3,15 @@ import { apiFetch } from './apiWrapper';
 
 type SearchParam = string | string[] | undefined;
 
-interface GetBooksParams {
-  q?: SearchParam;
-  page?: SearchParam;
-}
+
 
 export async function getBooks(
-  params: GetBooksParams = {},
+  q:SearchParam,
+  page:SearchParam
 ): Promise<BookType[]> {
   const query = new URLSearchParams();
-  if (params.q) query.set('title', String(params.q));
-  if (params.page) query.set('page', String(params.page));
+  if (q) query.set('q', String(q));
+  if (page) query.set('page', String(page));
 
   const response = await apiFetch(`/books?${query.toString()}`);
   return (await response.json()) as BookType[];
@@ -22,6 +20,12 @@ export async function getBooks(
 export async function getBook(olid: string): Promise<ExtendedBookType> {
   const response = await apiFetch(`/books/${olid}`);
   return (await response.json()) as ExtendedBookType;
+}
+export async function getRandomBooks(page:SearchParam):Promise<BookType[]> {
+  const query = new URLSearchParams();
+  if (page) query.set('page', String(page));
+  const response = await apiFetch(`/books/random?${query.toString()}`);
+  return (await response.json()) as BookType[];
 }
 export async function getFakeBook(olid:string):Promise<ExtendedBookType>{
   const fakeBook:ExtendedBookType={

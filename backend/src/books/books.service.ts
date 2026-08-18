@@ -99,6 +99,16 @@ export class BooksService {
     );
     return books.map((b) => ({ ...b, liked: likedOlids.has(b.olid) }));
   }
+  async getRandom(page: number, userId?: number | null): Promise<bookDto[]> {
+    const data = await this.bookApi.getRandomBooks(page);
+    const books = mapToBookList(data.docs);
+    if (userId == null) return books;
+    const likedOlids = await this.likeRepository.getLikedOlids(
+      userId,
+      books.map((b) => b.olid),
+    );
+    return books.map((b) => ({ ...b, liked: likedOlids.has(b.olid) }));
+  }
   private async isLiked(olid: string, userId?: number | null) {
     if (userId == null) return false;
     const like = await this.likeRepository.getLike(olid, userId);

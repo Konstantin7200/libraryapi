@@ -17,6 +17,16 @@ export class BooksController {
     return response;
   }
   @UseGuards(AttachUserIdGuard)
+  @Get('/random')
+  async findRandom(
+    @Query('page') page?: number,
+    @UserId() userId?: number | null,
+  ) {
+    if (page === undefined) page = 1;
+    const response = await this.booksService.getRandom(page, userId);
+    return response;
+  }
+  @UseGuards(AttachUserIdGuard)
   @Get('/:olid')
   async findOne(@Param('olid') olid: string, @UserId() userId?: number | null) {
     const response = await this.booksService.findOneDetailed(olid, userId);

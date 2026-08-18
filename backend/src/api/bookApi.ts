@@ -19,6 +19,9 @@ export class BookApi {
       this._searchBooks(page, q),
     );
   }
+  async getRandomBooks(page: number) {
+    return this.getOrRun(`getRandom|${page}`, () => this._getRandomBooks(page));
+  }
 
   async getBook(olid: string) {
     return this.getOrRun(`book|${olid}`, () => this._getBook(olid));
@@ -70,6 +73,16 @@ export class BookApi {
     addParamIfNotEmpty(params, 'limit', PageSize.toString());
     const response = await fetch(
       `${API_BASE}/search.json?${params.toString()}`,
+    );
+    const data = (await response.json()) as RawSearchResult;
+    return data;
+  }
+  private async _getRandomBooks(page: number) {
+    const params = new URLSearchParams();
+    addParamIfNotEmpty(params, 'page', page.toString());
+    addParamIfNotEmpty(params, 'limit', PageSize.toString());
+    const response = await fetch(
+      `${API_BASE}/search.json?q=book&sort=random&${params.toString()}&fields=key,title,author_name,cover_i`,
     );
     const data = (await response.json()) as RawSearchResult;
     return data;
