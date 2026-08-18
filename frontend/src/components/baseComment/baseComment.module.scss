@@ -13,8 +13,17 @@
 
 .text {
     font-size: 1.25em;
+    max-width: 70%;
+    line-break: anywhere;
     line-height: 1.5;
     color: #222;
+}
+
+.clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .date {
@@ -54,5 +63,6 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    gap:1rem;
     align-items: center;
 }

@@ -6,5 +6,8 @@ type CommentType = {
   mine:boolean;
   id:number
 };
+type CommentTypeWithTitle=CommentType&{
+  bookTitle:string;
+}
 
-export type { CommentType };
+export type { CommentType,CommentTypeWithTitle };
