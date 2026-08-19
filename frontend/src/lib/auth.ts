@@ -13,12 +13,10 @@ async function authenticate(
     body: { login: login_, password },
   });
 
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
   const cookieStore = await cookies();
-  for (const setCookie of response.headers.getSetCookie()) {
+  const setCookies =
+    (response.headers['set-cookie'] as string[] | undefined) ?? [];
+  for (const setCookie of setCookies) {
     applySetCookie(cookieStore, setCookie);
   }
 }

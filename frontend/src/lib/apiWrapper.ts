@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies, headers } from 'next/headers';
+import axios, { AxiosResponse } from 'axios';
 import { EnvConfig } from '@/constants';
 import {
   AccessTokenCookie,
@@ -35,20 +36,25 @@ async function backendCookieHeader(): Promise<string | null> {
   return pairs.length > 0 ? pairs.join('; ') : null;
 }
 
-export async function apiFetch(
+export async function apiFetch<T = unknown>(
   urlPath: string,
   { method, body }: ApiOptions = {},
-): Promise<Response> {
+): Promise<AxiosResponse<T>> {
   const requestHeaders: Record<string, string> = {};
   const cookie = await backendCookieHeader();
   if (cookie) requestHeaders['Cookie'] = cookie;
-  if (body !== undefined) requestHeaders['Content-Type'] = 'application/json';
 
-  const response = await fetch(`${EnvConfig.API_BASE}${urlPath}`, {
-    method: method ?? 'GET',
-    headers: requestHeaders,
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  if (response.status === 403) return redirect('/login');
-  return response;
+  try {
+    return await axios.request<T>({
+      url: `${EnvConfig.API_BASE}${urlPath}`,
+      method: method ?? 'GET',
+      headers: requestHeaders,
+      data: body,
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 403) {
+      redirect('/login');
+    }
+    throw error;
+  }
 }

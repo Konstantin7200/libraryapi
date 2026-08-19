@@ -6,7 +6,7 @@ import { BookType } from '@/types/BookTypes';
 import { Paginated } from '@/types/Paginated';
 
 export async function addToBookList(olid: string, bookList: bookListItemType) {
-  const response = await apiFetch('/book-list', {
+  await apiFetch('/book-list', {
     method: 'POST',
     body: { status: bookList, bookOlid: olid },
   });
@@ -17,7 +17,8 @@ export async function getBookList(
   page = 1,
 ): Promise<Paginated<BookType>> {
   const searchString = `?type=${bookList}&page=${page}`;
-  const response = await apiFetch(`/book-list${searchString}`);
-  const data: Paginated<BookType> = await response.json();
+  const { data } = await apiFetch<Paginated<BookType>>(
+    `/book-list${searchString}`,
+  );
   return data;
 }

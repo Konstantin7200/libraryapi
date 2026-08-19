@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import axios from 'axios';
 import { EnvConfig } from '@/constants';
 import {
   AccessTokenCookie,
@@ -15,19 +16,24 @@ export async function proxy(request: NextRequest) {
 
   const refreshToken = request.cookies.get(RefreshTokenCookie)?.value;
   if (refreshToken === undefined) return NextResponse.next();
-  const refreshResponse = await fetch(`${EnvConfig.API_BASE}/auth/refresh`, {
-    method: 'POST',
-    headers: { Cookie: `${RefreshTokenCookie}=${refreshToken}` },
-  });
 
-  if (!refreshResponse.ok) {
+  let refreshResponse;
+  try {
+    refreshResponse = await axios.post(
+      `${EnvConfig.API_BASE}/auth/refresh`,
+      null,
+      { headers: { Cookie: `${RefreshTokenCookie}=${refreshToken}` } },
+    );
+  } catch (error) {
+    if (!axios.isAxiosError(error) || !error.response) throw error;
     const nextResponse = NextResponse.next();
     nextResponse.cookies.delete(AccessTokenCookie);
     nextResponse.cookies.delete(RefreshTokenCookie);
     return nextResponse;
   }
 
-  const setCookies = refreshResponse.headers.getSetCookie();
+  const setCookies =
+    (refreshResponse.headers['set-cookie'] as string[] | undefined) ?? [];
   const freshAccessToken = setCookies
     .map((header) => {
       const { name, value } = parseSetCookie(header);

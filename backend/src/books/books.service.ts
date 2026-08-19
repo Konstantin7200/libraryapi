@@ -18,21 +18,13 @@ export class BooksService {
   ) {}
   async findOneDetailed(olid: string, userId?: number | null) {
     const apiBook = await this.bookApi.getBook(olid);
-    const authorsName = await this.bookApi.getAuthor(
-      apiBook.authors[0].author.key.substring('/authors/'.length),
-    );
-    const stringEnd =
-      apiBook.description.value.indexOf('----------') !== -1
-        ? apiBook.description.value.indexOf('----------')
-        : apiBook.description.value.length;
-    const description = apiBook.description.value.substring(0, stringEnd);
     const liked = await this.isLiked(olid, userId);
     const likes = await this.likeRepository.getLikesByBook(olid);
     const book: extendedBookDto = {
       title: apiBook.title,
-      description: description,
-      authors: [authorsName.personal_name],
-      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
+      description: getDescription(apiBook.description),
+      authors: apiBook.author_name ?? [],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.cover_i}-L.jpg`,
       liked: liked,
       likes: likes,
       olid: olid,
@@ -43,13 +35,10 @@ export class BooksService {
     const redisBook = await this.redisCashe.getBook(olid);
     if (redisBook !== null) return redisBook;
     const apiBook = await this.bookApi.getBook(olid);
-    const authorsName = await this.bookApi.getAuthor(
-      apiBook.authors[0].author.key.substring('/authors/'.length),
-    );
     const book: bookDto = {
       title: apiBook.title,
-      authors: [authorsName.personal_name],
-      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.covers[0]}-L.jpg`,
+      authors: apiBook.author_name ?? [],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.cover_i}-L.jpg`,
       liked: false,
       olid: olid,
     };
@@ -127,4 +116,14 @@ export class BooksService {
     const like = await this.likeRepository.getLike(olid, userId);
     return like !== null;
   }
+}
+
+function getDescription(
+  description: string | { value: string } | undefined,
+): string {
+  if (!description) return '';
+  const raw = typeof description === 'string' ? description : description.value;
+  const stringEnd =
+    raw.indexOf('----------') !== -1 ? raw.indexOf('----------') : raw.length;
+  return raw.substring(0, stringEnd).trim();
 }

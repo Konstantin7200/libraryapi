@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import axios from 'axios';
 import { BookBatchSize, PageSize } from '../constants';
 import { CallQueue } from './callQueue';
 import { MemoryCashe } from '../cashe/memoryCashe';
 
 const API_BASE = 'https://openlibrary.org/';
+const openLibrary = axios.create({ baseURL: API_BASE });
 
 @Injectable()
 export class BookApi {
@@ -34,14 +36,6 @@ export class BookApi {
     return this.getOrRun(key, () => this._getBooksByOlids(unique));
   }
 
-  async getAuthor(authorKey: string) {
-    return this.getOrRun(
-      `author|${authorKey}`,
-      () => this._getAuthor(authorKey),
-      true,
-    );
-  }
-
   private getOrRun<T>(
     key: string,
     fetchFn: () => Promise<T>,
@@ -67,31 +61,40 @@ export class BookApi {
   }
 
   private async _searchBooks(page: number, q?: string) {
-    const params = new URLSearchParams();
-    addParamIfNotEmpty(params, 'q', q?.toString());
-    addParamIfNotEmpty(params, 'page', page.toString());
-    addParamIfNotEmpty(params, 'limit', PageSize.toString());
-    const response = await fetch(
-      `${API_BASE}/search.json?${params.toString()}`,
-    );
-    const data = (await response.json()) as RawSearchResult;
+    const params: Record<string, string> = {
+      page: page.toString(),
+      limit: PageSize.toString(),
+    };
+    if (q != undefined && q !== '') params['q'] = q;
+    const { data } = await openLibrary.get<RawSearchResult>('/search.json', {
+      params,
+    });
     return data;
   }
   private async _getRandomBooks(page: number) {
-    const params = new URLSearchParams();
-    addParamIfNotEmpty(params, 'page', page.toString());
-    addParamIfNotEmpty(params, 'limit', PageSize.toString());
-    const response = await fetch(
-      `${API_BASE}/search.json?q=book&sort=random&${params.toString()}&fields=key,title,author_name,cover_i`,
-    );
-    const data = (await response.json()) as RawSearchResult;
+    const { data } = await openLibrary.get<RawSearchResult>('/search.json', {
+      params: {
+        q: 'book',
+        sort: 'random',
+        page: page.toString(),
+        limit: PageSize.toString(),
+        fields: 'key,title,author_name,cover_i',
+      },
+    });
     return data;
   }
 
   private async _getBook(olid: string) {
-    const response = await fetch(`${API_BASE}/works/${olid}.json`);
-    const data = (await response.json()) as ApiBookByOlid;
-    return data;
+    const { data } = await openLibrary.get<RawSearchResult>('/search.json', {
+      params: {
+        q: `key:("/works/${olid}")`,
+        fields: 'key,title,author_name,cover_i,description',
+        limit: '1',
+      },
+    });
+    const book = data.docs.find((doc) => apiSearchDocIsConvertible(doc));
+    if (!book) throw new Error(`Book with olid ${olid} not found`);
+    return book as ApiBookByOlid;
   }
 
   private async _getBooksByOlids(olids: string[]) {
@@ -99,24 +102,17 @@ export class BookApi {
     for (let i = 0; i < olids.length; i += BookBatchSize) {
       const chunk = olids.slice(i, i + BookBatchSize);
       const query = chunk.map((olid) => `"/works/${olid}"`).join(' OR ');
-      const params = new URLSearchParams();
-      params.append('q', `key:(${query})`);
-      params.append('fields', 'key,title,author_name,cover_i');
-      params.append('limit', chunk.length.toString());
-      const response = await fetch(
-        `${API_BASE}/search.json?${params.toString()}`,
-      );
-      const data = (await response.json()) as RawSearchResult;
+      const { data } = await openLibrary.get<RawSearchResult>('/search.json', {
+        params: {
+          q: `key:(${query})`,
+          fields: 'key,title,author_name,cover_i',
+          limit: chunk.length.toString(),
+        },
+      });
       docs.push(...data.docs);
     }
     const filtered = docs.filter(apiSearchDocIsConvertible);
     return { docs: filtered, numFound: filtered.length };
-  }
-
-  private async _getAuthor(authorKey: string) {
-    const response = await fetch(`${API_BASE}/authors/${authorKey}.json`);
-    const data = (await response.json()) as ApiAuthor;
-    return data;
   }
 }
 
@@ -131,30 +127,11 @@ type ApiSearchDoc = {
   cover_i?: string | null;
 };
 type ApiBookByOlid = {
-  description: {
-    value: string;
-  };
   title: string;
-  authors: [
-    {
-      author: {
-        key: string;
-      };
-    },
-  ];
-  covers: number[];
+  description?: string | { value: string };
+  author_name?: string[];
+  cover_i?: number | string | null;
 };
-type ApiAuthor = {
-  personal_name: string;
-};
-
-function addParamIfNotEmpty(
-  params: URLSearchParams,
-  property: string,
-  value: string | undefined,
-) {
-  if (value != undefined && value !== '') params.append(property, value);
-}
 
 function apiSearchDocIsConvertible(doc: ApiSearchDoc): boolean {
   return Object.hasOwn(doc, 'key') && Object.hasOwn(doc, 'title');

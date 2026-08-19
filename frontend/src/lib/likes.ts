@@ -11,7 +11,6 @@ export async function toggleLike(olid: string) {
   });
 }
 export async function getLikedBooks(page = 1): Promise<Paginated<BookType>> {
-  const result = await apiFetch(`/likes?page=${page}`);
-  const data = (await result.json()) as Paginated<BookType>;
+  const { data } = await apiFetch<Paginated<BookType>>(`/likes?page=${page}`);
   return data;
 }

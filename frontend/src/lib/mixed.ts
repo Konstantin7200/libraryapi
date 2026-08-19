@@ -14,7 +14,8 @@ export async function getMixedBooks(
   const params = new URLSearchParams({ type: bookList, page: String(page) });
   if (liked !== undefined) params.append('liked', String(liked));
   if (query !== undefined) params.append('query', query);
-  const response = await apiFetch(`/mixed-list?${params.toString()}`);
-  const data: Paginated<BookType> = await response.json();
+  const { data } = await apiFetch<Paginated<BookType>>(
+    `/mixed-list?${params.toString()}`,
+  );
   return data;
 }
