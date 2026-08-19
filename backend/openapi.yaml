@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Library API
   description: "Backend API for a library app. Authentication is cookie-based: on login/signup an HTTP-only `libraryApiAccessToken` cookie is set; protected routes require it."
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: http://localhost:3000
     description: Local development server
@@ -33,16 +33,17 @@ paths:
               $ref: '#/components/schemas/AuthDto'
       responses:
         '200':
-          description: Tokens issued, auth cookies set
+          description: OK, auth cookies set
           headers:
             Set-Cookie:
               schema:
                 type: string
               description: Sets `libraryApiAccessToken` and `libraryApiRefreshToken` HTTP-only cookies
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Tokens'
+                type: string
+                example: OK
         '400':
           description: Incorrect login or password
 
@@ -58,16 +59,17 @@ paths:
               $ref: '#/components/schemas/AuthDto'
       responses:
         '200':
-          description: Tokens issued, auth cookies set
+          description: OK, auth cookies set
           headers:
             Set-Cookie:
               schema:
                 type: string
               description: Sets `libraryApiAccessToken` and `libraryApiRefreshToken` HTTP-only cookies
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Tokens'
+                type: string
+                example: OK
         '400':
           description: User with this login already exists
 
@@ -78,6 +80,11 @@ paths:
       responses:
         '200':
           description: Access token refreshed, cookies updated
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Sets a new `libraryApiAccessToken` HTTP-only cookie
           content:
             text/plain:
               schema:
@@ -98,25 +105,41 @@ paths:
           schema:
             type: integer
             minimum: 1
-        - name: title
+        - name: q
           in: query
           required: false
           schema:
             type: string
-        - name: author
-          in: query
-          required: false
-          schema:
-            type: string
+            description: Free-text search query
       responses:
         '200':
           description: A page of books
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
+                $ref: '#/components/schemas/PaginatedBooks'
+        '400':
+          description: Bad data format from upstream API
+
+  /books/random:
+    get:
+      summary: Get a random page of books
+      operationId: findRandomBooks
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: A random page of books
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBooks'
         '400':
           description: Bad data format from upstream API
 
@@ -130,16 +153,14 @@ paths:
           required: true
           schema:
             type: string
-            example: /works/OL45804W
+            example: OL45804W
       responses:
         '200':
-          description: The book (may include an `expirationDate` when served from Redis cache)
+          description: Detailed book information including the user's liked state and total like count
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RedisBook'
-        '404':
-          description: Book not found in cache
+                $ref: '#/components/schemas/ExtendedBook'
 
   /comments:
     post:
@@ -156,41 +177,101 @@ paths:
       responses:
         '201':
           description: Comment created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Comment'
         '401':
           description: Unauthorized
 
     get:
-      summary: Get comments for the current user or for a book
-      description: With the auth cookie returns the current user's comments; with the `book` query parameter returns comments for a book.
-      operationId: getComments
-      security:
-        - cookieAuth: []
+      summary: Get comments for a book
+      operationId: getCommentsByBook
       parameters:
-        - name: book
+        - name: olid
           in: query
-          required: false
+          required: true
           schema:
             type: string
+            description: Open Library key of the book
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
       responses:
         '200':
-          description: List of comments
+          description: A page of comments for the book
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Comment'
+                $ref: '#/components/schemas/PaginatedComments'
+
+    put:
+      summary: Update a comment
+      description: Allows the comment author to change the text of their comment.
+      operationId: updateComment
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdateDto'
+      responses:
+        '200':
+          description: Comment updated
+        '400':
+          description: Comment not found or access denied
         '401':
-          description: Unauthorized (when accessing user comments without a token)
+          description: Unauthorized
+
+  /comments/mine:
+    get:
+      summary: Get the current user's comments
+      operationId: getMyComments
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: A page of the current user's comments, each with the book title
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserHistoryComments'
+        '401':
+          description: Unauthorized
+
+  /comments/{id}:
+    delete:
+      summary: Delete a comment
+      description: Allows the comment author to delete their own comment.
+      operationId: deleteComment
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment deleted
+        '400':
+          description: Comment not found or access denied
+        '401':
+          description: Unauthorized
 
   /book-list:
     get:
       summary: Get the current user's book list
-      description: Optionally filtered by status.
+      description: Optionally filtered by status and paginated.
       operationId: getBookList
       security:
         - cookieAuth: []
@@ -199,16 +280,24 @@ paths:
           in: query
           required: false
           schema:
-            $ref: '#/components/schemas/BookListStatus'
+            $ref: '#/components/schemas/BookListStatusWithAll'
+        - name: page
+          in: query
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+                minimum: 1
+              - type: string
+                enum:
+                  - All
       responses:
         '200':
-          description: The user's book list
+          description: A page of books from the user's list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookListItem'
+                $ref: '#/components/schemas/PaginatedBooks'
         '401':
           description: Unauthorized
 
@@ -226,10 +315,6 @@ paths:
       responses:
         '201':
           description: Book added to list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookListItem'
         '401':
           description: Unauthorized
 
@@ -246,7 +331,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LikeDto'
       responses:
-        '200':
+        '201':
           description: Like toggled
           content:
             application/json:
@@ -255,23 +340,146 @@ paths:
         '401':
           description: Unauthorized
 
-  /likes/manual:
+    get:
+      summary: Get the current user's liked books
+      operationId: getLikedBooks
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+                minimum: 1
+              - type: string
+                enum:
+                  - All
+      responses:
+        '200':
+          description: A page of liked books
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBooks'
+        '401':
+          description: Unauthorized
+
+  /likes/sse/{olid}:
     get:
       summary: Subscribe to like-count updates via Server-Sent Events
       operationId: streamLikes
+      parameters:
+        - name: olid
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Open Library key of the book to watch
       responses:
         '200':
-          description: SSE stream of like count changes
+          description: SSE stream of like count changes. Also sends periodic `ping` heartbeat events.
           content:
             text/event-stream:
               schema:
-                type: object
-                properties:
-                  bookOlid:
-                    type: string
-                  likes:
-                    type: integer
-                    description: Number of likes for the book
+                $ref: '#/components/schemas/LikeEvent'
+
+  /mixed-list:
+    get:
+      summary: Get the user's combined book list and liked books
+      description: Merges the user's book list with their liked books, optionally filtered by list status, liked state and a free-text query.
+      operationId: getMixedList
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/BookListStatusWithAll'
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Free-text query matching book title or authors
+        - name: liked
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Filter by liked state
+      responses:
+        '200':
+          description: A page of books
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBooks'
+        '401':
+          description: Unauthorized
+
+  /user/login:
+    get:
+      summary: Get the current user's login
+      operationId: getUserLogin
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: The user's login
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Change the current user's login
+      operationId: changeLogin
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '201':
+          description: Login changed
+        '400':
+          description: User with this login already exists
+        '401':
+          description: Unauthorized
+
+  /user/password:
+    post:
+      summary: Change the current user's password
+      operationId: changePassword
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordDto'
+      responses:
+        '201':
+          description: Password changed
+        '400':
+          description: Current password does not match
+        '401':
+          description: Unauthorized
 
 components:
   securitySchemes:
@@ -293,19 +501,6 @@ components:
         password:
           type: string
 
-    Tokens:
-      type: object
-      required:
-        - accessToken
-        - refreshToken
-      properties:
-        accessToken:
-          type: string
-          description: JWT, expires in 15 minutes
-        refreshToken:
-          type: string
-          description: JWT, expires in 7 days
-
     Book:
       type: object
       required:
@@ -313,6 +508,7 @@ components:
         - title
         - authors
         - coversUrl
+        - liked
       properties:
         olid:
           type: string
@@ -327,17 +523,41 @@ components:
           type: string
           nullable: true
           description: Open Library cover URL
+        liked:
+          type: boolean
+          description: Whether the current user has liked the book. Always false when no auth cookie is sent.
 
-    RedisBook:
+    ExtendedBook:
       allOf:
         - $ref: '#/components/schemas/Book'
         - type: object
           required:
-            - expirationDate
+            - description
+            - likes
           properties:
-            expirationDate:
+            description:
               type: string
-              format: date-time
+            likes:
+              type: integer
+              description: Total number of likes for the book
+
+    PaginatedBooks:
+      type: object
+      required:
+        - items
+        - pageCount
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+        pageCount:
+          type: integer
+          description: Total number of pages
+        total:
+          type: integer
+          description: Total number of matching results
 
     CommentDto:
       type: object
@@ -347,6 +567,18 @@ components:
       properties:
         bookOlid:
           type: string
+          description: Open Library key of the book
+        text:
+          type: string
+
+    CommentUpdateDto:
+      type: object
+      required:
+        - id
+        - text
+      properties:
+        id:
+          type: integer
         text:
           type: string
 
@@ -354,25 +586,69 @@ components:
       type: object
       required:
         - id
-        - text
-        - createdAt
-        - updatedAt
         - bookOlid
+        - login
+        - text
+        - mine
+        - updatedAt
       properties:
         id:
           type: integer
+        bookOlid:
+          type: string
+        login:
+          type: string
+          description: Login of the comment author
         text:
           type: string
-        createdAt:
-          type: string
-          format: date-time
+        mine:
+          type: boolean
+          description: Whether the comment belongs to the current user. Always false when no auth cookie is sent.
         updatedAt:
           type: string
           format: date-time
-        bookOlid:
-          type: string
-        user:
-          $ref: '#/components/schemas/User'
+
+    UserHistoryComment:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          required:
+            - bookTitle
+          properties:
+            bookTitle:
+              type: string
+
+    PaginatedComments:
+      type: object
+      required:
+        - items
+        - pageCount
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        pageCount:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedUserHistoryComments:
+      type: object
+      required:
+        - items
+        - pageCount
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserHistoryComment'
+        pageCount:
+          type: integer
+        total:
+          type: integer
 
     BookListItemDto:
       type: object
@@ -385,25 +661,17 @@ components:
         status:
           $ref: '#/components/schemas/BookListStatus'
 
-    BookListItem:
-      type: object
-      required:
-        - id
-        - status
-        - bookOlid
-      properties:
-        id:
-          type: integer
-        status:
-          $ref: '#/components/schemas/BookListStatus'
-        bookOlid:
-          type: string
-        user:
-          $ref: '#/components/schemas/User'
-
     BookListStatus:
       type: string
       enum:
+        - Want to read
+        - Currently reading
+        - Already read
+
+    BookListStatusWithAll:
+      type: string
+      enum:
+        - All
         - Want to read
         - Currently reading
         - Already read
@@ -428,6 +696,37 @@ components:
           type: string
         user:
           $ref: '#/components/schemas/User'
+
+    LikeEvent:
+      type: object
+      required:
+        - bookOlid
+        - likes
+      properties:
+        bookOlid:
+          type: string
+        likes:
+          type: integer
+          description: Number of likes for the book
+
+    LoginDto:
+      type: object
+      required:
+        - newLogin
+      properties:
+        newLogin:
+          type: string
+
+    PasswordDto:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
 
     User:
       type: object
