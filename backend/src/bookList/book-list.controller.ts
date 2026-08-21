@@ -1,10 +1,16 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BookListService } from './book-list.service';
 import { UserId } from '../auth/userId.decorator';
-import type {
-  BookListItemDto,
-  BookListStatusWithAll,
-} from './dto/bookList.dto';
+import { BookListItemDto } from './dto/bookList.dto';
+import type { BookListStatusWithAll } from './dto/bookList.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('book-list')
@@ -15,7 +21,7 @@ export class BookListController {
   async getBookList(
     @UserId() userId: number,
     @Query('type') type: BookListStatusWithAll,
-    @Query('page') page: number,
+    @Query('page', new ParseIntPipe()) page: number,
   ) {
     const result = await this.bookListService.getBookList(userId, type, page);
     return result;

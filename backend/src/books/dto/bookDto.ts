@@ -1,38 +1,19 @@
-type bookDto = {
-  olid: string;
-  title: string;
-  authors: string[];
-  coversUrl: string | null;
-  liked: boolean;
-};
-type extendedBookDto = bookDto & {
-  description: string;
-  likes: number;
-};
-export type { bookDto, extendedBookDto };
+import { IsNotEmpty, IsPositive } from 'class-validator';
 
-/*import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Like } from './likeEntity';
-import { Comment } from './commentEntity';
-import { BookListItem } from './bookListItemEntity';
-
-@Entity()
-export class Book {
-  @PrimaryGeneratedColumn()
-  id!: number;
-  @Column({ unique: true })
+class bookDto {
+  @IsNotEmpty()
   olid!: string;
-  @Column()
+  @IsNotEmpty()
   title!: string;
-  @Column({ type: 'simple-array' })
+  @IsNotEmpty()
   authors!: string[];
-  @Column()
-  coversUrl!: string;
-  @OneToMany(() => Like, (like) => like.book)
-  likes!: Like[];
-  @OneToMany(() => Comment, (comment) => comment.book)
-  comments!: Comment[];
-  @OneToMany(() => BookListItem, (bookListItem) => bookListItem.book)
-  bookList!: BookListItem[];
+  coversUrl!: string | null;
+  liked!: boolean;
 }
-*/
+class extendedBookDto extends bookDto {
+  @IsNotEmpty()
+  description!: string;
+  @IsPositive()
+  likes!: number;
+}
+export { bookDto, extendedBookDto };

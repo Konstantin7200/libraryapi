@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 
 interface QueuedTask {
   fn: () => unknown;
@@ -12,7 +12,9 @@ export class CallQueue {
   private running = false;
 
   push<T>(fn: () => T | Promise<T>, bypasss?: true): Promise<T> {
-    if (this.callQueue.length > 10 && !bypasss) throw Error('Api is busy');
+    if (this.callQueue.length > 10 && !bypasss) {
+      throw new HttpException('Service temporarily unavailable', 503);
+    }
     return new Promise<T>((resolve, reject) => {
       this.callQueue.push({
         fn,

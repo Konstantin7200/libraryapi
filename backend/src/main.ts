@@ -5,7 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { AllExeptionFilter } from './AllExeptionFilter';
 
 let cachedApp: NestExpressApplication | undefined;
 const logger = new Logger('Bootstrap');
@@ -15,6 +16,13 @@ async function createApp(): Promise<NestExpressApplication> {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.use(cookieParser());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      validateCustomDecorators: true,
+    }),
+  );
+  app.useGlobalFilters(new AllExeptionFilter());
   const configService = app.get(ConfigService);
   app.enableCors({
     origin: configService

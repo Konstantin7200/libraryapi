@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import { BookBatchSize, PageSize } from '../constants';
 import { CallQueue } from './callQueue';
@@ -93,7 +93,9 @@ export class BookApi {
       },
     });
     const book = data.docs.find((doc) => apiSearchDocIsConvertible(doc));
-    if (!book) throw new Error(`Book with olid ${olid} not found`);
+    if (!book) {
+      throw new NotFoundException(`Book with olid ${olid} was not found`);
+    }
     return book as ApiBookByOlid;
   }
 

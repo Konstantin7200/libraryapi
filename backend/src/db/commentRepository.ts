@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { Comment } from './entities/commentEntity';
-import { createCommentDto } from '../comments/dto/createComment.dto';
+import { CreateCommentDto } from '../comments/dto/createComment.dto';
 import { PaginationOptions } from '../pagination/paginated.dto';
 
 @Injectable()
@@ -42,7 +42,7 @@ export class CommentRepository {
     });
     return result;
   }
-  async createOne(comment: createCommentDto, userId: number) {
+  async createOne(comment: CreateCommentDto, userId: number) {
     const commentToSave: DeepPartial<Comment> = {
       text: comment.text,
       bookOlid: comment.bookOlid,

@@ -2,22 +2,22 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserId } from '../auth/userId.decorator';
-import type { passwordDto } from './dto/passwordDto';
-import type { loginDto } from './dto/loginDto';
+import { PasswordDto } from './dto/passwordDto';
+import { LoginDto } from './dto/loginDto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Post('login')
   @UseGuards(AuthGuard)
-  async changeLogin(@UserId() userId: number, @Body() login: loginDto) {
+  async changeLogin(@UserId() userId: number, @Body() login: LoginDto) {
     await this.userService.changeLogin(userId, login.newLogin);
   }
   @Post('password')
   @UseGuards(AuthGuard)
   async changePassword(
     @UserId() userId: number,
-    @Body() password: passwordDto,
+    @Body() password: PasswordDto,
   ) {
     await this.userService.changePassword(
       userId,

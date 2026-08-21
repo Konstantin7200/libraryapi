@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { bookDto } from '../books/dto/bookDto';
 import { NoAuthorPlaceholder } from '../constants';
 
@@ -12,7 +13,7 @@ export function mapToBookList(docs: object[]): bookDto[] {
   return docs.map((book) => {
     const validatedBook = validateData(book);
     if (validatedBook === null) {
-      throw Error('Bad api response');
+      throw new InternalServerErrorException('Bad api response');
     }
     const { title, author_name, cover_i, key } = validatedBook;
     const coversUrl = cover_i

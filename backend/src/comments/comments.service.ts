@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { createCommentDto } from './dto/createComment.dto';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateCommentDto } from './dto/createComment.dto';
 import { CommentRepository } from '../db/commentRepository';
-import { commentDto, UserHistoryCommentDto } from './dto/comment.dto';
+import { CommentDto, UserHistoryCommentDto } from './dto/comment.dto';
 import { Comment } from '../db/entities/commentEntity';
 import { UserService } from '../user/user.service';
 import { PageSize } from '../constants';
@@ -32,7 +36,7 @@ export class CommentsService {
     bookOlid: string,
     userId: number | null,
     page: number,
-  ): Promise<Paginated<commentDto>> {
+  ): Promise<Paginated<CommentDto>> {
     const [dbComments, total] = await this.commentRepository.findByBook(
       bookOlid,
       { skip: (page - 1) * PageSize, take: PageSize },
@@ -40,15 +44,16 @@ export class CommentsService {
     const comments = this.dbCommentsToComments(dbComments, userId);
     return toPaginated(comments, total);
   }
-  async createComment(comment: createCommentDto, userId: number) {
+  async createComment(comment: CreateCommentDto, userId: number) {
     const created = await this.commentRepository.createOne(comment, userId);
     return created;
   }
   async updateComment(commentText: string, commentId: number, userId: number) {
     const comments = await this.commentRepository.findById(commentId);
     const comment = comments[0];
-    if (comment === null) throw Error('Comment not found');
-    if (comment.user.id !== userId) throw Error('Access denied');
+    if (comment === null) throw new NotFoundException('Comment not found');
+    if (comment.user.id !== userId)
+      throw new ForbiddenException('Access denied');
     const result = await this.commentRepository.updateOne(
       commentText,
       commentId,
@@ -58,8 +63,9 @@ export class CommentsService {
   async deleteComment(id: number, userId: number) {
     const comments = await this.commentRepository.findById(id);
     const comment = comments[0];
-    if (comment === null) throw Error('Comment not found');
-    if (comment.user.id !== userId) throw Error('Access denied');
+    if (comment === null) throw new NotFoundException('Comment not found');
+    if (comment.user.id !== userId)
+      throw new ForbiddenException('Access denied');
     const result = await this.commentRepository.deleteOne(comment);
     return result;
   }
@@ -67,8 +73,8 @@ export class CommentsService {
     dbComments: Comment[],
     userId: number | null,
     optionalLogin?: string,
-  ): commentDto[] {
-    const comments: commentDto[] = [];
+  ): CommentDto[] {
+    const comments: CommentDto[] = [];
     for (let i = 0; i < dbComments.length; i++) {
       const comment = dbComments[i];
       const login = optionalLogin ? optionalLogin : comment.user.login;
@@ -84,7 +90,7 @@ export class CommentsService {
     return comments;
   }
   private async addBookTitleToComments(
-    comments: commentDto[],
+    comments: CommentDto[],
   ): Promise<UserHistoryCommentDto[]> {
     const books = await this.bookService.findManyByOlids(
       comments.map((comment) => comment.bookOlid),

@@ -1,3 +1,7 @@
-export type loginDto = {
-  newLogin: string;
-};
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class LoginDto {
+  @IsNotEmpty()
+  @IsString()
+  newLogin!: string;
+}

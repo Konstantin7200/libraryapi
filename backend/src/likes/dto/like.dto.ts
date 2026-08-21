@@ -1,5 +1,7 @@
-type LikeDto = {
-  bookOlid: string;
-};
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export type { LikeDto };
+export class LikeDto {
+  @IsNotEmpty()
+  @IsString()
+  bookOlid!: string;
+}

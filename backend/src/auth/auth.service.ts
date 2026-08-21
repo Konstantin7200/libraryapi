@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -12,18 +12,22 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
+    private readonly logger: Logger,
   ) {}
   async login(authDto: AuthDto) {
     const user = await this.userRepository.findOne(authDto.login);
-    if (user === null) throw Error('Incorrect login or password');
+    if (user === null) {
+      throw new BadRequestException('Incorrect login or password');
+    }
     if (user.hashedPassword != hashFunction(authDto.password))
-      throw Error('Incorrect login or password');
+      throw new BadRequestException('Incorrect login or password');
     const result = await this.createTokens(user.id);
     return result;
   }
   async signUp(authDto: AuthDto) {
     const user = await this.userRepository.findOne(authDto.login);
-    if (user !== null) throw Error('User with this login already exists');
+    if (user !== null)
+      throw new BadRequestException('User with this login already exists');
     const createdUser = await this.userRepository.createOne(
       authDto.login,
       hashFunction(authDto.password),
@@ -67,7 +71,7 @@ export class AuthService {
       });
       return payload;
     } catch (err) {
-      console.error(err);
+      this.logger.warn(err);
       return null;
     }
   }

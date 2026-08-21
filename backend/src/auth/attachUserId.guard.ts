@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AccessTokenCookie } from '../constants';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +15,7 @@ export class AttachUserIdGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly logger: Logger,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
@@ -30,7 +36,7 @@ export class AttachUserIdGuard implements CanActivate {
       });
       return payload;
     } catch (err) {
-      console.error(err);
+      this.logger.warn(err);
       return null;
     }
   }

@@ -3,13 +3,14 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Query,
   Sse,
   UseGuards,
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
-import type { LikeDto } from './dto/like.dto';
+import { LikeDto } from './dto/like.dto';
 import { UserId } from '../auth/userId.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 
@@ -25,7 +26,10 @@ export class LikesController {
   }
   @Get()
   @UseGuards(AuthGuard)
-  async getLikesByUser(@UserId() userId: number, @Query('page') page: number) {
+  async getLikesByUser(
+    @UserId() userId: number,
+    @Query('page', new ParseIntPipe()) page: number,
+  ) {
     const result = await this.likesService.getLikedBooksByUser(userId, page);
     return result;
   }

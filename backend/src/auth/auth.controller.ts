@@ -18,7 +18,10 @@ export class AuthController {
   ) {}
 
   @Post('/login')
-  async login(@Body() authDto: AuthDto, @Res() res: Response) {
+  async login(
+    @Body() authDto: AuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const tokens = await this.authService.login(authDto);
     setCookies({
       res,
@@ -29,7 +32,10 @@ export class AuthController {
   }
 
   @Post('/signup')
-  async signUp(@Body() authDto: AuthDto, @Res() res: Response) {
+  async signUp(
+    @Body() authDto: AuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const tokens = await this.authService.signUp(authDto);
     setCookies({
       res,
@@ -39,7 +45,7 @@ export class AuthController {
     res.status(200).send('OK');
   }
   @Post('/refresh')
-  async refresh(@Res() res: Response) {
+  async refresh(@Res({ passthrough: true }) res: Response) {
     const refreshToken: unknown = (
       res.req.cookies as { [RefreshTokenCookie]: any }
     )[RefreshTokenCookie];

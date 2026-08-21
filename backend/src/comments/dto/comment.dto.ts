@@ -1,12 +1,11 @@
-type commentDto = {
+export interface CommentDto {
   id: number;
   bookOlid: string;
   login: string;
   text: string;
   mine: boolean;
   updatedAt: string;
-};
-type UserHistoryCommentDto = commentDto & {
+}
+export interface UserHistoryCommentDto extends CommentDto {
   bookTitle: string;
-};
-export type { commentDto, UserHistoryCommentDto };
+}

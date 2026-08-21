@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   ParseBoolPipe,
+  ParseIntPipe,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -18,7 +19,7 @@ export class MixedListController {
   @UseGuards(AuthGuard)
   async getMixedList(
     @UserId() userId: number,
-    @Query('page') page: number,
+    @Query('page', new ParseIntPipe()) page: number,
     @Query('type') type?: BookListStatusWithAll,
     @Query('query') query?: string,
     @Query('liked', new ParseBoolPipe({ optional: true })) liked?: boolean,

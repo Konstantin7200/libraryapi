@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BooksService } from './books.service';
 import { AttachUserIdGuard } from '../auth/attachUserId.guard';
 import { UserId } from '../auth/userId.decorator';
@@ -9,7 +16,7 @@ export class BooksController {
   @UseGuards(AttachUserIdGuard)
   @Get('/')
   async findMany(
-    @Query('page') page: number,
+    @Query('page', new ParseIntPipe()) page: number,
     @Query('q') q?: string,
     @UserId() userId?: number | null,
   ) {
@@ -19,7 +26,7 @@ export class BooksController {
   @UseGuards(AttachUserIdGuard)
   @Get('/random')
   async findRandom(
-    @Query('page') page?: number,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @UserId() userId?: number | null,
   ) {
     if (page === undefined) page = 1;
