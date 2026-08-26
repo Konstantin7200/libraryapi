@@ -46,6 +46,10 @@ paths:
                 example: OK
         '400':
           description: Incorrect login or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/signup:
     post:
@@ -72,6 +76,10 @@ paths:
                 example: OK
         '400':
           description: User with this login already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/refresh:
     post:
@@ -92,6 +100,10 @@ paths:
                 example: OK
         '401':
           description: Missing or invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /books:
     get:
@@ -120,6 +132,16 @@ paths:
                 $ref: '#/components/schemas/PaginatedBooks'
         '400':
           description: Bad data format from upstream API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Service temporarily unavailable (API rate limit reached)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /books/random:
     get:
@@ -142,6 +164,16 @@ paths:
                 $ref: '#/components/schemas/PaginatedBooks'
         '400':
           description: Bad data format from upstream API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Service temporarily unavailable (API rate limit reached)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /books/{olid}:
     get:
@@ -161,6 +193,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExtendedBook'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Service temporarily unavailable (API rate limit reached)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /comments:
     post:
@@ -177,8 +221,18 @@ paths:
       responses:
         '201':
           description: Comment created
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
       summary: Get comments for a book
@@ -221,8 +275,16 @@ paths:
           description: Comment updated
         '400':
           description: Comment not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /comments/mine:
     get:
@@ -246,6 +308,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedUserHistoryComments'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /comments/{id}:
     delete:
@@ -265,8 +331,16 @@ paths:
           description: Comment deleted
         '400':
           description: Comment not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /book-list:
     get:
@@ -300,6 +374,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedBooks'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       summary: Add a book to the current user's list
@@ -317,6 +395,10 @@ paths:
           description: Book added to list
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /likes:
     post:
@@ -339,6 +421,10 @@ paths:
                 $ref: '#/components/schemas/Like'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
       summary: Get the current user's liked books
@@ -365,6 +451,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedBooks'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /likes/sse/{olid}:
     get:
@@ -425,6 +515,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedBooks'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/login:
     get:
@@ -441,6 +535,10 @@ paths:
                 type: string
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       summary: Change the current user's login
@@ -458,8 +556,16 @@ paths:
           description: Login changed
         '400':
           description: User with this login already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/password:
     post:
@@ -478,8 +584,16 @@ paths:
           description: Password changed
         '400':
           description: Current password does not match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -675,6 +789,17 @@ components:
         - Want to read
         - Currently reading
         - Already read
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
 
     LikeDto:
       type: object
