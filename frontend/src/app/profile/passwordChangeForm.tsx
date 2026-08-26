@@ -6,6 +6,7 @@ import st from './form.module.scss';
 import { changePassword } from '@/lib/user';
 import { ApiError } from '@/lib/ApiError';
 import { redirect } from 'next/navigation';
+import { isNextRouterError } from 'next/dist/client/components/is-next-router-error';
 
 type State = { error: string } | null;
 
@@ -19,6 +20,7 @@ export const PasswordChangeForm = () => {
         );
         redirect('/profile');
       } catch (e) {
+        if (isNextRouterError(e)) throw e;
         if (e instanceof ApiError) return { error: e.message };
         return { error: 'Failed to change password' };
       }

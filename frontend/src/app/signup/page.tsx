@@ -4,6 +4,7 @@ import { signUp } from '@/lib/auth';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ApiError } from '@/lib/ApiError';
+import { isNextRouterError } from 'next/dist/client/components/is-next-router-error';
 
 const Page = () => {
   const signUpFunc = async (login: string, password: string) => {
@@ -12,6 +13,7 @@ const Page = () => {
       await signUp(login, password);
       redirect('/books');
     } catch (e) {
+      if (isNextRouterError(e)) throw e;
       if (e instanceof ApiError) return { error: e.message };
       return { error: 'Sign up failed' };
     }

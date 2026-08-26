@@ -18,16 +18,11 @@ export const LoginForm: FC<LoginFormProps> = ({ handleClick, variant }) => {
   const onClick = async () => {
     setError(null);
     setLoading(true);
-    try {
-      const result = await handleClick(login, password);
-      if (result?.error) {
-        setError(result.error);
-      }
-    } catch {
-      setError('Something went wrong');
-    } finally {
-      setLoading(false);
+    const result = await handleClick(login, password);
+    if (result?.error) {
+      setError(result.error);
     }
+    setLoading(false);
   };
 
   return (

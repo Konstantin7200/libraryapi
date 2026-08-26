@@ -52,16 +52,20 @@ export class AuthController {
     if (typeof refreshToken === 'string') {
       const accessToken =
         await this.authService.createAccessToken(refreshToken);
-      if (accessToken === null) return res.status(401).send('Unauthorized');
+      if (accessToken === null) {
+        res.status(401).send('Unauthorized');
+        return;
+      }
       setCookies({
         res,
         refreshToken,
         accessToken,
         secure: this.configService.get<boolean>('COOKIE_SECURE', false),
       });
-      return res.status(200).send('OK');
+      res.status(200).send('OK');
+      return;
     }
-    return res.status(401).send('Unauthorized');
+    res.status(401).send('Unauthorized');
   }
 }
 type setCookiesParams = {

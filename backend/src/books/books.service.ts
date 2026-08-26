@@ -6,7 +6,6 @@ import { LikeRepository } from '../db/likeRepository';
 import { mapToBookList } from '../utils/mapToBookList';
 import { RedisCashe } from '../cashe/redisCashe';
 import { Paginated, toPaginated } from '../pagination/paginated.dto';
-import { PageSize, RandomPageCount } from '../constants';
 
 @Injectable()
 export class BooksService {
@@ -100,7 +99,7 @@ export class BooksService {
   ): Promise<Paginated<bookDto>> {
     const data = await this.bookApi.getRandomBooks(page);
     const books = mapToBookList(data.docs);
-    if (userId == null) return toPaginated(books, RandomPageCount * PageSize);
+    if (userId == null) return toPaginated(books, data.numFound);
     const likedOlids = await this.likeRepository.getLikedOlids(
       userId,
       books.map((b) => b.olid),
@@ -109,7 +108,7 @@ export class BooksService {
       ...b,
       liked: likedOlids.has(b.olid),
     }));
-    return toPaginated(likedBooks, RandomPageCount * PageSize);
+    return toPaginated(likedBooks, data.numFound);
   }
   private async isLiked(olid: string, userId?: number | null) {
     if (userId == null) return false;

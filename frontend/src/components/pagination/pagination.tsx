@@ -19,6 +19,8 @@ export const Pagination: FC<PaginationProps> = ({
       onChange={(e, page) => {
         handleChange(page);
       }}
+      siblingCount={1}
+      boundaryCount={1}
       page={currentPage}
       count={pageCount}
     />

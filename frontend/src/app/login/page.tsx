@@ -4,6 +4,7 @@ import { login } from '@/lib/auth';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ApiError } from '@/lib/ApiError';
+import { isNextRouterError } from 'next/dist/client/components/is-next-router-error';
 
 const Page = () => {
   const loginFunc = async (username: string, password: string) => {
@@ -12,6 +13,7 @@ const Page = () => {
       await login(username, password);
       redirect('/books');
     } catch (e) {
+      if (isNextRouterError(e)) throw e;
       if (e instanceof ApiError) return { error: e.message };
       return { error: 'Login failed' };
     }
