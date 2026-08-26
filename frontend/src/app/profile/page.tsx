@@ -55,6 +55,19 @@ const page = async ({ searchParams }: PageProps) => {
             </Button>
           </CardActions>
         </Card>
+        </div>
+        <div>
+          <Card>
+          <CardContent>
+            <h3>Comments</h3>
+            <p>This is where your comments are stored</p>
+          </CardContent>
+          <CardActions>
+            <Button variant="text">
+              <Link href={'/profile/comments'}>View my comments</Link>
+            </Button>
+          </CardActions>
+        </Card>
         <Card>
           <CardContent>
             <h3>Likes</h3>
@@ -66,7 +79,8 @@ const page = async ({ searchParams }: PageProps) => {
             </Button>
           </CardActions>
         </Card>
-      </div>
+        </div>
+      
       <hr />
       <h2>My settings</h2>
       <div>

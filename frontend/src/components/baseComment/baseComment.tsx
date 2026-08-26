@@ -8,7 +8,7 @@ import {
   useState,
   useTransition,
 } from 'react';
-import { Button } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import { CommentType } from '@/types/CommentType';
 import { deleteComment, updateComment } from './actions';
 import st from './baseComment.module.scss';
@@ -95,6 +95,7 @@ export const BaseComment: FC<BaseCommentProps> = ({
               size="small"
               variant="contained"
               disabled={isPending}
+              startIcon={isPending ? <CircularProgress size={14} /> : undefined}
             >
               {isPending ? 'Saving…' : 'Save'}
             </Button>

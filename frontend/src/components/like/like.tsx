@@ -1,5 +1,6 @@
 'use client';
 import { Favorite } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import st from './like.module.scss';
 import { FC, useState, useTransition } from 'react';
 import { toggleLike } from '@/lib/likes';
@@ -42,7 +43,11 @@ export const Like: FC<LikeProps> = ({ liked, olid, position }) => {
       onClick={handleLikeClick}
       style={{ cursor: isPending ? 'wait' : 'pointer', opacity: isPending ? 0.6 : 1 }}
     >
-      <Favorite sx={iconStyle} />
+      {isPending ? (
+        <CircularProgress sx={{ width: '80px', height: '80px' }} />
+      ) : (
+        <Favorite sx={iconStyle} />
+      )}
     </div>
   );
 };

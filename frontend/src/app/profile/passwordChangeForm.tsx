@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { Button, Alert, TextField } from '@mui/material';
+import { Button, Alert, TextField, CircularProgress } from '@mui/material';
 import st from './form.module.scss';
 import { changePassword } from '@/lib/user';
 import { ApiError } from '@/lib/ApiError';
@@ -44,7 +44,12 @@ export const PasswordChangeForm = () => {
         required
       />
       {state?.error && <Alert severity="error">{state.error}</Alert>}
-      <Button type="submit" variant="contained" disabled={pending}>
+      <Button
+        type="submit"
+        variant="contained"
+        disabled={pending}
+        startIcon={pending ? <CircularProgress size={16} /> : undefined}
+      >
         {pending ? 'Changing...' : 'Change password'}
       </Button>
     </form>

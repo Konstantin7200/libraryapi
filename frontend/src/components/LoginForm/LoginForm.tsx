@@ -2,7 +2,7 @@
 
 import { FC, useState } from 'react';
 import st from './LoginForm.module.scss';
-import { Alert, Button, FormControl, TextField } from '@mui/material';
+import { Alert, Button, CircularProgress, FormControl, TextField } from '@mui/material';
 
 interface LoginFormProps {
   handleClick: (login: string, password: string) => Promise<{ error?: string } | void>;
@@ -43,6 +43,7 @@ export const LoginForm: FC<LoginFormProps> = ({ handleClick, variant }) => {
           variant="contained"
           onClick={onClick}
           disabled={loading}
+          startIcon={loading ? <CircularProgress size={16} /> : undefined}
         >
           {buttonText}
         </Button>
