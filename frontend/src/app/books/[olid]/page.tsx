@@ -39,10 +39,9 @@ const Page: FC<PageProps> = async ({ params, searchParams }) => {
   async function createCommentAction(formData: FormData) {
     'use server';
     const text = formData.get('text');
-    if (typeof text === 'string' && text.trim()) {
-      await createComment(olid, text);
-      refresh();
-    }
+    if (typeof text !== 'string' || !text.trim()) return;
+    await createComment(olid, text);
+    refresh();
   }
   async function addToBookListAction(formData: FormData) {
     'use server';

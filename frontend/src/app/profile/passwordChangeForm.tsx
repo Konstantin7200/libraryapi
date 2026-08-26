@@ -1,19 +1,34 @@
-import { Button, TextField } from '@mui/material';
+'use client';
+
+import { useActionState } from 'react';
+import { Button, Alert, TextField } from '@mui/material';
 import st from './form.module.scss';
 import { changePassword } from '@/lib/user';
+import { ApiError } from '@/lib/ApiError';
 import { redirect } from 'next/navigation';
 
+type State = { error: string } | null;
+
 export const PasswordChangeForm = () => {
-  const handleSubmit = async (formData: FormData) => {
-    'use server';
-    await changePassword(
-      formData.get('currentPassword') as string,
-      formData.get('newPassword') as string,
-    );
-    redirect('/profile');
-  };
+  const [state, formAction, pending] = useActionState(
+    async (_prevState: State, formData: FormData): Promise<State> => {
+      try {
+        await changePassword(
+          formData.get('currentPassword') as string,
+          formData.get('newPassword') as string,
+        );
+        redirect('/profile');
+      } catch (e) {
+        if (e instanceof ApiError) return { error: e.message };
+        return { error: 'Failed to change password' };
+      }
+      return null;
+    },
+    null,
+  );
+
   return (
-    <form action={handleSubmit} className={st.form}>
+    <form action={formAction} className={st.form}>
       <TextField
         name="currentPassword"
         label="Current password"
@@ -26,8 +41,9 @@ export const PasswordChangeForm = () => {
         type="password"
         required
       />
-      <Button type="submit" variant="contained">
-        Change password
+      {state?.error && <Alert severity="error">{state.error}</Alert>}
+      <Button type="submit" variant="contained" disabled={pending}>
+        {pending ? 'Changing...' : 'Change password'}
       </Button>
     </form>
   );

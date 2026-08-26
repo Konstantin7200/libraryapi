@@ -3,6 +3,7 @@ import { Favorite } from '@mui/icons-material';
 import st from './like.module.scss';
 import { FC, useState, useTransition } from 'react';
 import { toggleLike } from '@/lib/likes';
+import { useToast } from '@/components/toast/useToast';
 
 interface LikeProps {
   liked: boolean;
@@ -11,7 +12,8 @@ interface LikeProps {
 }
 export const Like: FC<LikeProps> = ({ liked, olid, position }) => {
   const [isLiked, setIsLiked] = useState(liked);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
+  const { showError } = useToast();
   const iconStyle = {
     width: '80px',
     height: '80px',
@@ -20,8 +22,17 @@ export const Like: FC<LikeProps> = ({ liked, olid, position }) => {
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isPending) return;
+    const prev = isLiked;
     setIsLiked((prev) => !prev);
-    startTransition(() => toggleLike(olid));
+    startTransition(async () => {
+      try {
+        await toggleLike(olid);
+      } catch {
+        setIsLiked(prev);
+        showError('Failed to update like');
+      }
+    });
   };
   return (
     <div
@@ -29,6 +40,7 @@ export const Like: FC<LikeProps> = ({ liked, olid, position }) => {
         position === 'relative' ? st.RelativeIconWrapper : st.IconWrapper
       }
       onClick={handleLikeClick}
+      style={{ cursor: isPending ? 'wait' : 'pointer', opacity: isPending ? 0.6 : 1 }}
     >
       <Favorite sx={iconStyle} />
     </div>

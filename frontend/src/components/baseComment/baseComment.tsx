@@ -13,6 +13,7 @@ import { CommentType } from '@/types/CommentType';
 import { deleteComment, updateComment } from './actions';
 import st from './baseComment.module.scss';
 import Link from 'next/link';
+import { useToast } from '@/components/toast/useToast';
 
 type BaseCommentProps = CommentType & {
   linkText: string | null;
@@ -54,13 +55,26 @@ export const BaseComment: FC<BaseCommentProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [expanded, checkOverflow]);
 
+  const { showError } = useToast();
+
   const handleSave = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      await updateComment(id, formData);
-      setEditing(false);
+      const result = await updateComment(id, formData);
+      if (result && 'error' in result) {
+        showError(result.error);
+      } else {
+        setEditing(false);
+      }
     });
+  };
+
+  const handleDelete = async () => {
+    const result = await deleteComment(id);
+    if (result && 'error' in result) {
+      showError(result.error);
+    }
   };
 
   const date = new Date(updatedAt).toUTCString();
@@ -128,7 +142,7 @@ export const BaseComment: FC<BaseCommentProps> = ({
             <Button
               size="small"
               color="error"
-              onClick={() => deleteComment(id)}
+              onClick={handleDelete}
             >
               Delete
             </Button>

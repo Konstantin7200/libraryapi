@@ -1,28 +1,44 @@
-import { Button, TextField } from '@mui/material';
+'use client';
+
+import { useActionState } from 'react';
+import { Button, Alert, TextField } from '@mui/material';
 import st from './form.module.scss';
 import { changeLogin } from '@/lib/user';
+import { ApiError } from '@/lib/ApiError';
 import { redirect } from 'next/navigation';
+
+type State = { error: string } | null;
 
 interface LoginChangeFormProps {
   initialLogin: string;
 }
 
 export const LoginChangeForm = ({ initialLogin }: LoginChangeFormProps) => {
-  const handleSubmit = async (formData: FormData) => {
-    'use server';
-    await changeLogin(formData.get('login') as string);
-    redirect('/profile');
-  };
+  const [state, formAction, pending] = useActionState(
+    async (_prevState: State, formData: FormData): Promise<State> => {
+      try {
+        await changeLogin(formData.get('login') as string);
+        redirect('/profile');
+      } catch (e) {
+        if (e instanceof ApiError) return { error: e.message };
+        return { error: 'Failed to change login' };
+      }
+      return null;
+    },
+    null,
+  );
+
   return (
-    <form action={handleSubmit} className={st.form}>
+    <form action={formAction} className={st.form}>
       <TextField
         name="login"
         label="Username"
         defaultValue={initialLogin}
         required
       />
-      <Button type="submit" variant="contained">
-        Change login
+      {state?.error && <Alert severity="error">{state.error}</Alert>}
+      <Button type="submit" variant="contained" disabled={pending}>
+        {pending ? 'Changing...' : 'Change login'}
       </Button>
     </form>
   );

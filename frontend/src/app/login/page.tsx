@@ -3,12 +3,18 @@ import st from './page.module.scss';
 import { login } from '@/lib/auth';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { ApiError } from '@/lib/ApiError';
 
 const Page = () => {
   const loginFunc = async (username: string, password: string) => {
     'use server';
-    await login(username, password);
-    redirect('/books');
+    try {
+      await login(username, password);
+      redirect('/books');
+    } catch (e) {
+      if (e instanceof ApiError) return { error: e.message };
+      return { error: 'Login failed' };
+    }
   };
   return (
     <div className={st.page}>

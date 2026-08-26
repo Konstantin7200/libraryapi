@@ -2,7 +2,7 @@
 
 import { cookies, headers } from 'next/headers';
 import axios, { AxiosResponse } from 'axios';
-import { EnvConfig } from '@/constants';
+import { AccessRejectedCode, EnvConfig } from '@/constants';
 import {
   AccessTokenCookie,
   ForwardedAccessTokenHeader,
@@ -11,6 +11,7 @@ import {
 } from './cookie';
 import type { ParsedCookie } from './cookie';
 import { redirect } from 'next/navigation';
+import { ApiError } from './ApiError';
 
 export type CookieStore = Awaited<ReturnType<typeof cookies>>;
 
@@ -52,8 +53,15 @@ export async function apiFetch<T = unknown>(
       data: body,
     });
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 403) {
+    if (axios.isAxiosError(error) && error.response?.status === AccessRejectedCode) {
       redirect('/login');
+    }
+    if (axios.isAxiosError(error) && error.response?.data) {
+      const { status, message } = error.response.data as {
+        status: number;
+        message: string;
+      };
+      throw new ApiError(status, message);
     }
     throw error;
   }
