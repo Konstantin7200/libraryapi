@@ -8,6 +8,7 @@ import { BookApi } from '../api/bookApi';
 import { BooksService } from '../books/books.service';
 import { PageSize } from '../constants';
 import { Paginated, toPaginated } from '../pagination/paginated.dto';
+import { ToggleLikeResponseDto } from './dto/toggleLikeResponse.dto';
 
 export type LikeEventType = {
   bookOlid: string;
@@ -30,14 +31,17 @@ export class LikesService {
     this.likesSubscriber = this.redis.duplicate();
     this.likesSubscriber.subscribe(LIKES_CHANNEL);
   }
-  async toggleLike(bookOlid: string, userId: number) {
+  async toggleLike(
+    bookOlid: string,
+    userId: number,
+  ): Promise<ToggleLikeResponseDto> {
     const likeFound = await this.likeRepository.getLike(bookOlid, userId);
     if (likeFound === null) {
-      const result = await this.likeRepository.addLike(bookOlid, userId);
-      return result;
+      const like = await this.likeRepository.addLike(bookOlid, userId);
+      return { id: like.id, bookOlid: like.bookOlid, userId: like.user.id };
     }
-    const result = await this.likeRepository.removeLike(likeFound);
-    return result;
+    await this.likeRepository.removeLike(likeFound);
+    return { id: likeFound.id, bookOlid: likeFound.bookOlid, userId };
   }
   async likesChanged(bookOlid: string) {
     const likes = await this.likeRepository.getLikesByBook(bookOlid);
