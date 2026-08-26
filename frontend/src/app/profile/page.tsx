@@ -46,6 +46,17 @@ const page = async ({ searchParams }: PageProps) => {
         </Card>
         <Card>
           <CardContent>
+            <h3>Books</h3>
+            <p>This is where your saved books are stored</p>
+          </CardContent>
+          <CardActions>
+            <Button variant="text">
+              <Link href={'/profile/books'}>View my books</Link>
+            </Button>
+          </CardActions>
+        </Card>
+        <Card>
+          <CardContent>
             <h3>Likes</h3>
             <p>This is where books you liked are stored</p>
           </CardContent>
