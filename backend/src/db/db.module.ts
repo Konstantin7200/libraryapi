@@ -6,7 +6,7 @@ import { User } from './entities/userEntity';
 import { Comment } from './entities/commentEntity';
 import { Like } from './entities/likeEntity';
 import { BookListItem } from './entities/bookListItemEntity';
-import { getEnvConfig } from '../envConfig';
+import { getEnvConfig } from '../config/envConfig';
 import { CommentRepository } from './commentRepository';
 import { BookListRepository } from './bookListRepository';
 import { LikeRepository } from './likeRepository';
