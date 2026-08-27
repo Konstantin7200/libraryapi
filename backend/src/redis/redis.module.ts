@@ -1,7 +1,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
-import { getEnvConfig } from '../config/envConfig';
+import { getEnvConfig } from '../envConfig';
 
 function createRedisClient(configService: ConfigService): Redis {
   const { redisHost, redisPort, redisUsername, redisPassword, redisTls } =
