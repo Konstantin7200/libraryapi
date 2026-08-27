@@ -1,5 +1,14 @@
-import { hash } from 'crypto';
+import * as bcrypt from 'bcrypt';
 
-export function hashFunction(data: string) {
-  return hash('sha256', data);
+const SALT_ROUNDS = 10;
+
+export async function hashPassword(data: string): Promise<string> {
+  return bcrypt.hash(data, SALT_ROUNDS);
+}
+
+export async function comparePassword(
+  data: string,
+  hash: string,
+): Promise<boolean> {
+  return bcrypt.compare(data, hash);
 }

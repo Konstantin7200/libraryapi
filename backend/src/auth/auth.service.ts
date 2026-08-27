@@ -3,7 +3,7 @@ import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../db/userRepository';
-import { hashFunction } from '../utils/hashFunction';
+import { comparePassword, hashPassword } from '../utils/hashFunction';
 import { AccessTokenMaxAge, RefreshTokenMaxAge } from '../constants';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class AuthService {
     if (user === null) {
       throw new BadRequestException('Incorrect login or password');
     }
-    if (user.hashedPassword != hashFunction(authDto.password))
+    if (!(await comparePassword(authDto.password, user.hashedPassword)))
       throw new BadRequestException('Incorrect login or password');
     const result = await this.createTokens(user.id);
     return result;
@@ -30,7 +30,7 @@ export class AuthService {
       throw new BadRequestException('User with this login already exists');
     const createdUser = await this.userRepository.createOne(
       authDto.login,
-      hashFunction(authDto.password),
+      await hashPassword(authDto.password),
     );
     const result = await this.createTokens(createdUser.id);
     return result;

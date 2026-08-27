@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserRepository } from '../db/userRepository';
-import { hashFunction } from '../utils/hashFunction';
+import { comparePassword, hashPassword } from '../utils/hashFunction';
 import { DeepPartial } from 'typeorm';
 import { User } from '../db/entities/userEntity';
 
@@ -23,11 +23,11 @@ export class UserService {
   ) {
     const user = await this.userRepository.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
-    if (user.hashedPassword != hashFunction(currentPassword))
+    if (!(await comparePassword(currentPassword, user.hashedPassword)))
       throw new BadRequestException('Passwords dont match');
     const updateUser: DeepPartial<User> = {
       id: userId,
-      hashedPassword: hashFunction(newPassword),
+      hashedPassword: await hashPassword(newPassword),
     };
     const result = await this.userRepository.updateOne(updateUser);
   }
