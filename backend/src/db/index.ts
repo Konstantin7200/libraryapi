@@ -4,7 +4,7 @@ import { Comment } from './entities/commentEntity';
 import { Like } from './entities/likeEntity';
 import { User } from './entities/userEntity';
 import { BookListItem } from './entities/bookListItemEntity';
-import { getEnvConfig } from '../envConfig';
+import { getEnvConfig } from '../config/envConfig';
 
 export async function initializeDataSource(configService: ConfigService) {
   const config = getEnvConfig(configService);
