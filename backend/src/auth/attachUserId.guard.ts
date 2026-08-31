@@ -35,7 +35,7 @@ export class AttachUserIdGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
       return payload;
-    } catch (err) {
+    } catch (err: unknown) {
       this.logger.warn(err);
       return null;
     }

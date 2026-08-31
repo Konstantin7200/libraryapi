@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsPositive } from 'class-validator';
 
-class bookDto {
+class BookDto {
   @IsNotEmpty()
   olid!: string;
   @IsNotEmpty()
@@ -10,10 +10,10 @@ class bookDto {
   coversUrl!: string | null;
   liked!: boolean;
 }
-class extendedBookDto extends bookDto {
+class ExtendedBookDto extends BookDto {
   @IsNotEmpty()
   description!: string;
   @IsPositive()
   likes!: number;
 }
-export { bookDto, extendedBookDto };
+export { BookDto, ExtendedBookDto };

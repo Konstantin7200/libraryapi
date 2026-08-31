@@ -1,4 +1,5 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { OPEN_LIBRARY_QUEUE_LIMIT, OPEN_LIBRARY_GAP_MS } from '../constants';
 
 interface QueuedTask {
   fn: () => unknown;
@@ -12,8 +13,11 @@ export class CallQueue {
   private running = false;
 
   push<T>(fn: () => T | Promise<T>, bypasss?: true): Promise<T> {
-    if (this.callQueue.length > 10 && !bypasss) {
-      throw new HttpException('Service temporarily unavailable', 503);
+    if (this.callQueue.length > OPEN_LIBRARY_QUEUE_LIMIT && !bypasss) {
+      throw new HttpException(
+        'Service temporarily unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
     return new Promise<T>((resolve, reject) => {
       this.callQueue.push({
@@ -35,6 +39,6 @@ export class CallQueue {
     setTimeout(() => {
       this.running = false;
       void this.execute();
-    }, 1500);
+    }, OPEN_LIBRARY_GAP_MS);
   }
 }

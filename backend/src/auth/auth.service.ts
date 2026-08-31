@@ -1,10 +1,18 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../db/userRepository';
 import { comparePassword, hashPassword } from '../utils/hashFunction';
-import { AccessTokenMaxAge, RefreshTokenMaxAge } from '../constants';
+import {
+  ACCESS_TOKEN_MAX_AGE_SEC,
+  REFRESH_TOKEN_MAX_AGE_SEC,
+} from '../constants';
 
 @Injectable()
 export class AuthService {
@@ -38,14 +46,14 @@ export class AuthService {
   private async createTokens(id: number) {
     const accessPayload: JwtPayload = {
       id: id,
-      exp: Math.floor(Date.now() / 1000) + AccessTokenMaxAge,
+      exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_MAX_AGE_SEC,
     };
     const accessToken = await this.jwtService.signAsync(accessPayload, {
       secret: this.configService.get<string>('JWT_SECRET'),
     });
     const refreshPayload: JwtPayload = {
       id: id,
-      exp: Math.floor(Date.now() / 1000) + RefreshTokenMaxAge,
+      exp: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_MAX_AGE_SEC,
     };
     const refreshToken = await this.jwtService.signAsync(refreshPayload, {
       secret: this.configService.get<string>('JWT_SECRET'),
@@ -54,10 +62,9 @@ export class AuthService {
   }
   async createAccessToken(refreshToken: string) {
     const refreshPayload = await this.verifyToken(refreshToken);
-    if (refreshPayload === null) return null;
     const accessPayload: JwtPayload = {
       id: refreshPayload.id,
-      exp: Math.floor(Date.now() / 1000) + AccessTokenMaxAge,
+      exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_MAX_AGE_SEC,
     };
     const accessToken = await this.jwtService.signAsync(accessPayload, {
       secret: this.configService.get<string>('JWT_SECRET'),
@@ -70,9 +77,9 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
       return payload;
-    } catch (err) {
-      this.logger.warn(err);
-      return null;
+    } catch (err: unknown) {
+      this.logger.warn(err instanceof Error ? err.message : err);
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 }

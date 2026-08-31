@@ -33,9 +33,8 @@ export async function deleteComment(id: number) {
 }
 
 export async function createComment(olid: string, text: string) {
-  const response = await apiFetch('/comments', {
+  await apiFetch('/comments', {
     method: 'POST',
     body: { bookOlid: olid, text: text },
   });
-  console.log(response.data);
 }

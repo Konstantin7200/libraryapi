@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BookApi } from '../api/bookApi';
-import { bookDto, extendedBookDto } from './dto/bookDto';
+import { BookDto, ExtendedBookDto } from './dto/bookDto';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
 import { mapToBookList } from '../utils/mapToBookList';
@@ -19,32 +19,32 @@ export class BooksService {
     const apiBook = await this.bookApi.getBook(olid);
     const liked = await this.isLiked(olid, userId);
     const likes = await this.likeRepository.getLikesByBook(olid);
-    const book: extendedBookDto = {
+    const book: ExtendedBookDto = {
       title: apiBook.title,
       description: getDescription(apiBook.description),
-      authors: apiBook.author_name ?? [],
-      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.cover_i}-L.jpg`,
+      authors: apiBook.authorName ?? [],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.coverId}-L.jpg`,
       liked: liked,
       likes: likes,
       olid: olid,
     };
     return book;
   }
-  async findOne(olid: string): Promise<bookDto> {
+  async findOne(olid: string): Promise<BookDto> {
     const redisBook = await this.redisCashe.getBook(olid);
     if (redisBook !== null) return redisBook;
     const apiBook = await this.bookApi.getBook(olid);
-    const book: bookDto = {
+    const book: BookDto = {
       title: apiBook.title,
-      authors: apiBook.author_name ?? [],
-      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.cover_i}-L.jpg`,
+      authors: apiBook.authorName ?? [],
+      coversUrl: `https://covers.openlibrary.org/b/id/${apiBook.coverId}-L.jpg`,
       liked: false,
       olid: olid,
     };
     await this.redisCashe.setBook(olid, book);
     return book;
   }
-  async findManyByOlids(olids: string[]): Promise<bookDto[]> {
+  async findManyByOlids(olids: string[]): Promise<BookDto[]> {
     if (olids.length === 0) return [];
     const unique = [...new Set(olids)];
     const cached = await Promise.all(
@@ -53,7 +53,7 @@ export class BooksService {
         return { olid, book };
       }),
     );
-    const booksByOlid = new Map<string, bookDto>();
+    const booksByOlid = new Map<string, BookDto>();
     cached.forEach(({ olid, book }) => {
       if (book !== null) booksByOlid.set(olid, book);
     });
@@ -73,13 +73,13 @@ export class BooksService {
     }
     return olids
       .map((olid) => booksByOlid.get(olid))
-      .filter((book): book is bookDto => book !== undefined);
+      .filter((book): book is BookDto => book !== undefined);
   }
   async findMany(
     page: number,
     q?: string,
     userId?: number | null,
-  ): Promise<Paginated<bookDto>> {
+  ): Promise<Paginated<BookDto>> {
     const data = await this.bookApi.searchBooks(page, q);
     const books = mapToBookList(data.docs);
     if (userId == null) return toPaginated(books, data.numFound);
@@ -96,7 +96,7 @@ export class BooksService {
   async getRandom(
     page: number,
     userId?: number | null,
-  ): Promise<Paginated<bookDto>> {
+  ): Promise<Paginated<BookDto>> {
     const data = await this.bookApi.getRandomBooks(page);
     const books = mapToBookList(data.docs);
     if (userId == null) return toPaginated(books, data.numFound);

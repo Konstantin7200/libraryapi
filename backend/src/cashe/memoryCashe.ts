@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import NodeCache from 'node-cache';
-import { bookDto, extendedBookDto } from '../books/dto/bookDto';
-import { MemoryCacheTtl } from '../constants';
+import { BookDto, ExtendedBookDto } from '../books/dto/bookDto';
+import { MEMORY_CACHE_TTL_SEC } from '../constants';
 
 @Injectable()
 export class MemoryCashe {
   constructor(private readonly cache: NodeCache) {}
-  setBooks(query: string, books: bookDto[]) {
-    this.cache.set(query, books, MemoryCacheTtl);
+  setBooks(query: string, books: BookDto[]) {
+    this.cache.set(query, books, MEMORY_CACHE_TTL_SEC);
   }
   getBooks(query: string) {
     const result = this.cache.get(query);
@@ -15,11 +15,11 @@ export class MemoryCashe {
     return null;
   }
   getBook(query: string) {
-    const result: extendedBookDto | null | undefined = this.cache.get(query);
+    const result: ExtendedBookDto | null | undefined = this.cache.get(query);
     return result;
   }
-  setBook(query: string, book: extendedBookDto) {
-    this.cache.set(query, book, MemoryCacheTtl);
+  setBook(query: string, book: ExtendedBookDto) {
+    this.cache.set(query, book, MEMORY_CACHE_TTL_SEC);
   }
   getRaw<T>(key: string): T | null {
     const result = this.cache.get<T>(key);
@@ -27,11 +27,11 @@ export class MemoryCashe {
     return result;
   }
   setRaw<T>(key: string, value: T) {
-    this.cache.set(key, value, MemoryCacheTtl);
+    this.cache.set(key, value, MEMORY_CACHE_TTL_SEC);
   }
 }
 
-function unknownIsBook(raw: unknown): raw is bookDto {
+function unknownIsBook(raw: unknown): raw is BookDto {
   if (typeof raw != 'object' || raw === null) return false;
   if (
     Object.hasOwn(raw, 'olid') &&
@@ -42,7 +42,7 @@ function unknownIsBook(raw: unknown): raw is bookDto {
     return true;
   return false;
 }
-function unknownIsBookArray(raw: unknown): raw is bookDto[] {
+function unknownIsBookArray(raw: unknown): raw is BookDto[] {
   if (Array.isArray(raw)) return unknownIsBook(raw[0]);
   return false;
 }

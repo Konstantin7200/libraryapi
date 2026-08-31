@@ -3,6 +3,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -16,10 +17,14 @@ export class AllExeptionFilter implements ExceptionFilter {
   constructor() {
     this.logger = new Logger();
   }
-  private extractMessage(response: string | Record<string, any>): string {
+  private extractMessage(response: string | object): string {
     if (typeof response === 'string') return response;
-    if (response && typeof response === 'object' && 'message' in response) {
-      return response.message as string;
+    if (
+      typeof response === 'object' &&
+      response !== null &&
+      'message' in response
+    ) {
+      return (response as Record<string, unknown>).message as string;
     }
     return 'Unknown error';
   }
@@ -36,11 +41,11 @@ export class AllExeptionFilter implements ExceptionFilter {
       };
     } else {
       error = {
-        status: 500,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
       };
     }
-    if (error.status >= 500) {
+    if (error.status >= Number(HttpStatus.INTERNAL_SERVER_ERROR)) {
       this.logger.error(
         { ...error, timestamp: new Date() },
         exception instanceof Error ? exception.stack : '',

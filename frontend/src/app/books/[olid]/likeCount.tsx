@@ -14,12 +14,7 @@ export const LikeCount: FC<LikeCountProps> = ({ initialLikes, olid }) => {
       `${EnvConfig.API_BASE}/likes/sse/${olid}`,
     );
 
-    eventSource.onopen = () => {
-      console.log('SSE connected');
-    };
-
     eventSource.onmessage = (event) => {
-      console.log(event);
       try {
         const data = JSON.parse(event.data) as {
           bookOlid: string;

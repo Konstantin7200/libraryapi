@@ -3,17 +3,35 @@ import { Redis } from 'ioredis';
 import { map, merge, Observable, timer } from 'rxjs';
 import { UserRepository } from '../db/userRepository';
 import { LikeRepository } from '../db/likeRepository';
-import { bookDto } from '../books/dto/bookDto';
+import { BookDto } from '../books/dto/bookDto';
 import { BookApi } from '../api/bookApi';
 import { BooksService } from '../books/books.service';
-import { PageSize } from '../constants';
+import { PageSize, SSE_HEARTBEAT_MS } from '../constants';
 import { Paginated, toPaginated } from '../pagination/paginated.dto';
-import { ToggleLikeResponseDto } from './dto/toggleLikeResponse.dto';
+import { ToggleLikeResponseDto } from './dto/toggleLikeResponse.types';
 
 export type LikeEventType = {
   bookOlid: string;
   likes: number;
 };
+
+function isLikeEventType(data: unknown): data is LikeEventType {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.bookOlid === 'string' && typeof obj.likes === 'number';
+}
+
+function parseLikeEvent(message: string): LikeEventType | null {
+  try {
+    const parsed: unknown = JSON.parse(message);
+    if (isLikeEventType(parsed)) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+type SseMessageEvent = { data: string | object };
 
 const LIKES_CHANNEL = 'likes';
 
@@ -52,27 +70,27 @@ export class LikesService {
       this.logger.error(error);
     }
   }
-  likesSse(olid: string): Observable<MessageEvent> {
-    const likes$ = new Observable<MessageEvent>((subscriber) => {
+  likesSse(olid: string): Observable<SseMessageEvent> {
+    const likes$ = new Observable<SseMessageEvent>((subscriber) => {
       const onMessage = (channel: string, message: string) => {
         if (channel !== LIKES_CHANNEL) return;
-        const payload = JSON.parse(message) as LikeEventType;
-        if (payload.bookOlid === olid) {
-          subscriber.next({ data: payload } as MessageEvent);
+        const payload = parseLikeEvent(message);
+        if (payload !== null && payload.bookOlid === olid) {
+          subscriber.next({ data: payload });
         }
       };
       this.likesSubscriber.on('message', onMessage);
       return () => this.likesSubscriber.off('message', onMessage);
     });
-    const heartbeat$ = timer(0, 20000).pipe(
-      map(() => ({ comment: 'ping' }) as unknown as MessageEvent),
+    const heartbeat$ = timer(0, SSE_HEARTBEAT_MS).pipe(
+      map(() => ({ data: 'ping' })),
     );
     return merge(likes$, heartbeat$);
   }
   async getLikedBooksByUser(
     userId: number,
     page: number | 'All',
-  ): Promise<Paginated<bookDto>> {
+  ): Promise<Paginated<BookDto>> {
     const pagination =
       page === 'All' ? {} : { skip: (page - 1) * PageSize, take: PageSize };
     const [likes, total] = await this.likeRepository.getLikesByUser(

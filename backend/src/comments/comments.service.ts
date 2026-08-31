@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateCommentDto } from './dto/createComment.dto';
 import { CommentRepository } from '../db/commentRepository';
-import { CommentDto, UserHistoryCommentDto } from './dto/comment.dto';
+import { CommentDto, UserHistoryCommentDto } from './dto/comment.types';
 import { Comment } from '../db/entities/commentEntity';
 import { UserService } from '../user/user.service';
 import { PageSize } from '../constants';

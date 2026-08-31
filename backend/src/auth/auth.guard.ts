@@ -26,7 +26,6 @@ export class AuthGuard implements CanActivate {
     if (typeof accessToken !== 'string') throw new UnauthorizedException();
 
     const accessPayload = await this.verifyToken(accessToken);
-    if (accessPayload === null) throw new UnauthorizedException();
     Object.defineProperty(req, 'userId', { value: accessPayload.id });
     return true;
   }
@@ -36,9 +35,9 @@ export class AuthGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
       return payload;
-    } catch (err) {
-      this.logger.warn(err);
-      return null;
+    } catch (err: unknown) {
+      this.logger.warn(err instanceof Error ? err.message : err);
+      throw new UnauthorizedException('Invalid access token');
     }
   }
 }

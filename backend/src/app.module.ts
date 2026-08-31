@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -9,12 +9,15 @@ import { BookListModule } from './bookList/book-list.module';
 import { LikesModule } from './likes/likes.module';
 import { UserModule } from './user/user.module';
 import { MixedListModule } from './mixed-list/mixed-list.module';
+import { loadEnv } from './config/envConfig';
+import { CorsMiddleware } from './middleware/cors.middleware';
+import { CookieParserMiddleware } from './middleware/cookie-parser.middleware';
 
 @Module({
   imports: [
     AuthModule,
     BooksModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     CommentsModule,
     BookListModule,
     LikesModule,
@@ -24,4 +27,9 @@ import { MixedListModule } from './mixed-list/mixed-list.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    loadEnv();
+    consumer.apply(CorsMiddleware, CookieParserMiddleware).forRoutes('*');
+  }
+}

@@ -1,9 +1,11 @@
-import * as dotenv from 'dotenv';
+import { loadEnv } from '../../config/envConfig';
 import { DataSource } from 'typeorm';
+import { Logger } from '@nestjs/common';
 
-dotenv.config();
+const logger = new Logger('ClearDb');
 
 async function clearDb() {
+  loadEnv();
   const dataSource = new DataSource({
     type: 'postgres',
     host: process.env.DB_HOST,
@@ -17,18 +19,18 @@ async function clearDb() {
   });
 
   await dataSource.initialize();
-  console.log('Connected to database');
+  logger.log('Connected to database');
 
   await dataSource.query(
     'TRUNCATE TABLE "like", "comment", "book_list_item", "user" CASCADE',
   );
-  console.log('All tables cleared');
+  logger.log('All tables cleared');
 
   await dataSource.destroy();
-  console.log('Done');
+  logger.log('Done');
 }
 
 clearDb().catch((err) => {
-  console.error('Failed to clear database:', err);
+  logger.error('Failed to clear database:', err);
   process.exit(1);
 });

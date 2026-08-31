@@ -10,6 +10,7 @@ import { getEnvConfig } from '../config/envConfig';
 import { CommentRepository } from './commentRepository';
 import { BookListRepository } from './bookListRepository';
 import { LikeRepository } from './likeRepository';
+import { MixedListRepository } from './mixedListRepository';
 
 @Module({
   imports: [
@@ -41,12 +42,14 @@ import { LikeRepository } from './likeRepository';
     CommentRepository,
     BookListRepository,
     LikeRepository,
+    MixedListRepository,
   ],
   exports: [
     UserRepository,
     CommentRepository,
     BookListRepository,
     LikeRepository,
+    MixedListRepository,
   ],
 })
 export class DatabaseModule {}

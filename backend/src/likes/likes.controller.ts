@@ -19,7 +19,7 @@ export class LikesController {
   constructor(private readonly likesService: LikesService) {}
   @Post()
   @UseGuards(AuthGuard)
-  async toggleLike(@Body() like: LikeDto, @UserId() userId) {
+  async toggleLike(@Body() like: LikeDto, @UserId() userId: number) {
     const result = await this.likesService.toggleLike(like.bookOlid, userId);
     await this.likesService.likesChanged(like.bookOlid);
     return result;

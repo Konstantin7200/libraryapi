@@ -1,13 +1,13 @@
-import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import {
   AccessTokenCookie,
-  AccessTokenMaxAge,
+  ACCESS_TOKEN_MAX_AGE_SEC,
   RefreshTokenCookie,
-  RefreshTokenMaxAge,
+  REFRESH_TOKEN_MAX_AGE_SEC,
 } from '../constants';
 
 @Controller('auth')
@@ -28,7 +28,7 @@ export class AuthController {
       ...tokens,
       secure: this.configService.get<boolean>('COOKIE_SECURE', false),
     });
-    res.status(200).send('OK');
+    res.status(HttpStatus.OK).send('OK');
   }
 
   @Post('/signup')
@@ -42,30 +42,22 @@ export class AuthController {
       ...tokens,
       secure: this.configService.get<boolean>('COOKIE_SECURE', false),
     });
-    res.status(200).send('OK');
+    res.status(HttpStatus.OK).send('OK');
   }
   @Post('/refresh')
-  async refresh(@Res({ passthrough: true }) res: Response) {
-    const refreshToken: unknown = (
-      res.req.cookies as { [RefreshTokenCookie]: any }
-    )[RefreshTokenCookie];
-    if (typeof refreshToken === 'string') {
-      const accessToken =
-        await this.authService.createAccessToken(refreshToken);
-      if (accessToken === null) {
-        res.status(401).send('Unauthorized');
-        return;
-      }
-      setCookies({
-        res,
-        refreshToken,
-        accessToken,
-        secure: this.configService.get<boolean>('COOKIE_SECURE', false),
-      });
-      res.status(200).send('OK');
-      return;
-    }
-    res.status(401).send('Unauthorized');
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies[RefreshTokenCookie] as string | undefined;
+    const accessToken = await this.authService.createAccessToken(refreshToken!);
+    setCookies({
+      res,
+      refreshToken: refreshToken!,
+      accessToken,
+      secure: this.configService.get<boolean>('COOKIE_SECURE', false),
+    });
+    res.status(HttpStatus.OK).send('OK');
   }
 }
 type setCookiesParams = {
@@ -81,13 +73,13 @@ function setCookies({
   secure,
 }: setCookiesParams) {
   res.cookie(AccessTokenCookie, accessToken, {
-    maxAge: AccessTokenMaxAge * 1000,
+    maxAge: ACCESS_TOKEN_MAX_AGE_SEC * 1000,
     httpOnly: true,
     sameSite: true,
     secure,
   });
   res.cookie(RefreshTokenCookie, refreshToken, {
-    maxAge: RefreshTokenMaxAge * 1000,
+    maxAge: REFRESH_TOKEN_MAX_AGE_SEC * 1000,
     httpOnly: true,
     sameSite: true,
     secure,

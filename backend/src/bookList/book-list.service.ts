@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BookListStatus, BookListStatusWithAll } from './dto/bookList.dto';
 import { BookListRepository } from '../db/bookListRepository';
-import { bookDto } from '../books/dto/bookDto';
+import { BookDto } from '../books/dto/bookDto';
 import { BooksService } from '../books/books.service';
 import { PageSize } from '../constants';
 import { Paginated, toPaginated } from '../pagination/paginated.dto';
@@ -16,7 +16,7 @@ export class BookListService {
     userId: number,
     type: BookListStatusWithAll,
     page: number | 'All',
-  ): Promise<Paginated<bookDto>> {
+  ): Promise<Paginated<BookDto>> {
     const pagination =
       page === 'All' ? {} : { skip: (page - 1) * PageSize, take: PageSize };
     const [bookList, total] =
