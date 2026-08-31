@@ -25,3 +25,5 @@ export async function createApp(): Promise<NestExpressApplication> {
   cachedApp = app;
   return app;
 }
+
+export default createApp;
